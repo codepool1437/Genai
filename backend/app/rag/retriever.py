@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 _COURSE_TOP_K   = 6
 _DOC_TOP_K      = 4
-_MIN_SCORE      = 0.20   # drop results below this cosine similarity
+_COURSE_MIN_SCORE = 0.20  # only suggest courses with meaningful relevance
+_DOC_MIN_SCORE    = 0.0   # always include user docs — they were uploaded for context
 
 
 def retrieve(
@@ -33,8 +34,8 @@ def retrieve(
     q_emb = embed_one(enriched_query)
     store  = get_store()
 
-    course_hits = store.search("courses",   q_emb, top_k=top_k_courses, min_score=_MIN_SCORE)
-    doc_hits    = store.search("user_docs", q_emb, top_k=top_k_docs,    min_score=_MIN_SCORE)
+    course_hits = store.search("courses",   q_emb, top_k=top_k_courses, min_score=_COURSE_MIN_SCORE)
+    doc_hits    = store.search("user_docs", q_emb, top_k=top_k_docs,    min_score=_DOC_MIN_SCORE)
 
     context_str = _format_context(course_hits, doc_hits)
     sources     = _format_sources(course_hits, doc_hits)
