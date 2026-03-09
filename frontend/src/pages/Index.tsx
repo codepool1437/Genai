@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Target, Sparkles, ArrowRight, BookOpen, TrendingUp, Users, FileText, Briefcase, Brain, Mic } from "lucide-react";
+import { Target, Sparkles, ArrowRight, BookOpen, TrendingUp, Users, FileText, Briefcase, Brain, Mic, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const features = [
@@ -74,6 +74,15 @@ const Index = () => {
             >
               Get Started
               <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              onClick={() => navigate("/roadmap")}
+            >
+              <Map className="w-4 h-4 mr-2" />
+              Career Roadmap
             </Button>
             <Button
               size="lg"

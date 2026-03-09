@@ -24,6 +24,10 @@ class ChatRequest(BaseModel):
     profile: Optional[UserProfile] = None
 
 
+class RoadmapRequest(BaseModel):
+    profile: UserProfile
+
+
 # ── Resume ────────────────────────────────────────────────────────────────────
 
 class ResumeRequest(BaseModel):

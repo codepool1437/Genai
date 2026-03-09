@@ -61,7 +61,7 @@ const KnowledgeBase = () => {
       const res = await fetch(apiUrl("/api/documents"));
       if (res.ok) {
         const data = await res.json();
-        setDocuments(data);
+        setDocuments(data.documents ?? []);
       }
     } catch {
       // silently fail on poll
@@ -77,8 +77,8 @@ const KnowledgeBase = () => {
   const handleUpload = async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     for (const file of fileArray) {
-      if (!file.name.endsWith(".pdf") && !file.name.endsWith(".txt") && !file.name.endsWith(".md")) {
-        toast.error(`Unsupported file type: ${file.name}. Please upload PDF, TXT, or MD files.`);
+      if (!file.name.endsWith(".pdf") && !file.name.endsWith(".txt") && !file.name.endsWith(".md") && !file.name.endsWith(".docx")) {
+        toast.error(`Unsupported file type: ${file.name}. Please upload PDF, TXT, MD, or DOCX files.`);
         continue;
       }
       if (file.size > 20 * 1024 * 1024) {
@@ -124,8 +124,6 @@ const KnowledgeBase = () => {
 
   const handleDelete = async (doc: CareerDocument) => {
     try {
-      await supabase.from("document_chunks").delete().eq("document_id", doc.id) as any;
-      await supabase.from("career_documents").delete().eq("id", doc.id) as any;
       const res = await fetch(apiUrl(`/api/documents/${doc.id}`), { method: "DELETE" });
       if (!res.ok) throw new Error("Delete failed");
       toast.success(`Deleted ${doc.file_name}`);
@@ -208,7 +206,7 @@ const KnowledgeBase = () => {
                   Drop files here or click to upload
                 </p>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Supports PDF, TXT, and MD files (max 20MB)
+                  Supports PDF, TXT, MD, and DOCX files (max 20MB)
                 </p>
                 <Button
                   variant="outline"
@@ -216,7 +214,7 @@ const KnowledgeBase = () => {
                     const input = document.createElement("input");
                     input.type = "file";
                     input.multiple = true;
-                    input.accept = ".pdf,.txt,.md";
+                    input.accept = ".pdf,.txt,.md,.docx";
                     input.onchange = (e) => {
                       const files = (e.target as HTMLInputElement).files;
                       if (files) handleUpload(files);

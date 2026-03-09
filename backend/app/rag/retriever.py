@@ -1,0 +1,123 @@
+"""
+Unified retriever — searches both `courses` and `user_docs` collections,
+merges results, and returns a formatted LLM context string + sources list.
+"""
+from __future__ import annotations
+import logging
+from app.rag.embedder import embed_one
+from app.rag.vector_store import get_store
+
+logger = logging.getLogger(__name__)
+
+_COURSE_TOP_K   = 6
+_DOC_TOP_K      = 4
+_MIN_SCORE      = 0.20   # drop results below this cosine similarity
+
+
+def retrieve(
+    query: str,
+    *,
+    profile: dict | None = None,
+    top_k_courses: int = _COURSE_TOP_K,
+    top_k_docs: int = _DOC_TOP_K,
+) -> tuple[str, list[dict]]:
+    """
+    Embed `query`, search both collections, and return:
+      - context_str  : formatted text to inject into the LLM system prompt
+      - sources      : list of source dicts for the SSE `sources` event
+
+    The `profile` dict (optional) is used to enrich the query with the
+    user's current role/skills so the embedding is more targeted.
+    """
+    enriched_query = _enrich_query(query, profile)
+    q_emb = embed_one(enriched_query)
+    store  = get_store()
+
+    course_hits = store.search("courses",   q_emb, top_k=top_k_courses, min_score=_MIN_SCORE)
+    doc_hits    = store.search("user_docs", q_emb, top_k=top_k_docs,    min_score=_MIN_SCORE)
+
+    context_str = _format_context(course_hits, doc_hits)
+    sources     = _format_sources(course_hits, doc_hits)
+
+    logger.debug(
+        "retrieve(): query=%r  courses=%d  docs=%d",
+        enriched_query[:60], len(course_hits), len(doc_hits),
+    )
+    return context_str, sources
+
+
+# ─── helpers ────────────────────────────────────────────────────────────────
+
+def _enrich_query(query: str, profile: dict | None) -> str:
+    """Prepend a short profile summary to the query for better retrieval."""
+    if not profile:
+        return query
+    parts = []
+    if profile.get("currentRole"):
+        parts.append(f"Current role: {profile['currentRole']}")
+    if profile.get("targetRole"):
+        parts.append(f"Target role: {profile['targetRole']}")
+    if profile.get("skills"):
+        skills = profile["skills"]
+        if isinstance(skills, list):
+            skills = ", ".join(skills[:8])
+        parts.append(f"Skills: {skills}")
+    prefix = " | ".join(parts)
+    return f"{prefix}. {query}" if prefix else query
+
+
+def _format_context(course_hits: list[dict], doc_hits: list[dict]) -> str:
+    sections: list[str] = []
+
+    if course_hits:
+        lines = ["=== RECOMMENDED COURSES (ranked by relevance) ==="]
+        for i, h in enumerate(course_hits, 1):
+            badge = "FREE" if h.get("free") else h.get("platform", "")
+            lines.append(
+                f"{i}. [{h['title']}]({h['url']}) — {badge}\n"
+                f"   {h['text']}\n"
+                f"   Level: {h.get('level','?')} | Duration: {h.get('duration','?')} | Score: {h['score']:.2f}"
+            )
+        sections.append("\n".join(lines))
+
+    if doc_hits:
+        lines = ["=== RELEVANT CONTENT FROM YOUR UPLOADED DOCUMENTS ==="]
+        for i, h in enumerate(doc_hits, 1):
+            lines.append(
+                f"{i}. [{h.get('file_name','doc')}] (chunk {h.get('chunk_index',0)+1})\n"
+                f"   {h.get('text','')[:400]}\n"
+                f"   Score: {h['score']:.2f}"
+            )
+        sections.append("\n".join(lines))
+
+    if not sections:
+        return "(No relevant courses or documents found for this query.)"
+
+    return "\n\n".join(sections)
+
+
+def _format_sources(
+    course_hits: list[dict], doc_hits: list[dict]
+) -> list[dict]:
+    """Return the sources list consumed by the frontend SSE `sources` event."""
+    sources = []
+
+    for h in course_hits:
+        sources.append({
+            "type":            "course",
+            "file_name":       h["title"],
+            "platform":        h.get("platform", ""),
+            "url":             h.get("url", ""),
+            "score":           round(h["score"], 3),
+            "content_preview": h.get("text", "")[:200],
+        })
+
+    for h in doc_hits:
+        sources.append({
+            "type":            "document",
+            "file_name":       h.get("file_name", "uploaded document"),
+            "score":           round(h["score"], 3),
+            "content_preview": h.get("text", "")[:200],
+        })
+
+    return sources

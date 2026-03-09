@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from app.schemas.models import ChatRequest
-from app.rag.course_db import retrieve_courses, all_courses_as_context, ROLE_SKILL_MAP
+from app.rag.retriever import retrieve
 from app.rag.prompts import CAREER_COUNSELOR_SYSTEM
 
 router = APIRouter()
@@ -33,35 +33,21 @@ def _stream_response(messages: list[dict]):
 
 @router.post("/chat")
 async def chat(req: ChatRequest):
-    # ── RAG: extract target role from profile and retrieve relevant courses ──
+    # ── RAG: semantic search over courses + uploaded documents ───────────────
     rag_context = ""
     rag_sources = []
 
-    if req.profile and req.profile.goals:
-        # Detect target role from goals text by matching known roles
-        goals_lower = req.profile.goals.lower()
-        detected_role = None
-        for role in ROLE_SKILL_MAP:
-            if role.lower() in goals_lower:
-                detected_role = role
-                break
-
-        if detected_role:
-            current_skills = [s.strip() for s in (req.profile.skills or "").split(",") if s.strip()]
-            courses = retrieve_courses(detected_role, current_skills)
-            if courses:
-                rag_context = f"\n\nVERIFIED COURSE DATABASE (recommend ONLY these — do not invent courses):\n{all_courses_as_context(courses)}"
-                rag_sources = [
-                    {
-                        "file_name": f"{c['skill']} — {c['title']}",
-                        "score": 0.95,
-                        "content_preview": f"{c['platform']} | {c['duration']} | {c['level']}"
-                    }
-                    for c in courses[:5]
-                ]
+    # Build a search query from the latest user message + profile summary
+    last_user_msg = next(
+        (m.content for m in reversed(req.messages) if m.role == "user"), ""
+    )
+    if last_user_msg:
+        profile_dict = req.profile.model_dump() if req.profile else None
+        rag_context, rag_sources = retrieve(last_user_msg, profile=profile_dict)
 
     # ── Build message list for Ollama ────────────────────────────────────────
-    system_content = CAREER_COUNSELOR_SYSTEM + rag_context
+    rag_block = f"\n\n{rag_context}" if rag_context else ""
+    system_content = CAREER_COUNSELOR_SYSTEM + rag_block
     ollama_messages = [{"role": "system", "content": system_content}]
     for msg in req.messages:
         ollama_messages.append({"role": msg.role, "content": msg.content})
