@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { apiGet } from "@/lib/api";
 import type { UserProfile } from "./ProfileSetup";
 
 type RagSource = { file_name: string; score: number; content_preview: string };
@@ -21,14 +22,24 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const profile: UserProfile | null = (() => {
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
     try {
-      const saved = localStorage.getItem("career-profile");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  })();
+      const s = localStorage.getItem("career-profile");
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
+  });
+
+  // Hydrate profile from server (silently keeps localStorage in sync)
+  useEffect(() => {
+    apiGet<{ profile: UserProfile | null }>("/api/profile")
+      .then(({ profile: p }) => {
+        if (p) {
+          setProfile(p);
+          localStorage.setItem("career-profile", JSON.stringify(p));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -195,13 +206,14 @@ const ChatPage = () => {
           <p className="text-xs text-muted-foreground">Career Guidance Assistant</p>
         </div>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/knowledge-base")}>
-            <BookOpen className="w-3.5 h-3.5 mr-1" />
-            Knowledge Base
+          <Button variant="outline" size="sm" className="text-xs px-2 sm:px-3" onClick={() => navigate("/knowledge-base")}>
+            <BookOpen className="w-3.5 h-3.5 sm:mr-1" />
+            <span className="hidden sm:inline">Knowledge Base</span>
           </Button>
           {profile && (
-            <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/profile")}>
-              Edit Profile
+            <Button variant="outline" size="sm" className="text-xs px-2 sm:px-3" onClick={() => navigate("/profile")}>
+              <span className="hidden sm:inline">Edit Profile</span>
+              <span className="sm:hidden">Profile</span>
             </Button>
           )}
         </div>

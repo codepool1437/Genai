@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ChatPage from "./pages/ChatPage";
 import CoverLetterGenerator from "./pages/CoverLetterGenerator";
+import EvalDashboard from "./pages/EvalDashboard";
 import Index from "./pages/Index";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import MockInterview from "./pages/MockInterview";
@@ -13,7 +14,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import RoadmapPage from "./pages/Roadmap";
 import SkillQuiz from "./pages/SkillQuiz";
-import EvalDashboard from "./pages/EvalDashboard";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <ErrorBoundary>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/profile" element={<ProfileSetup />} />
           <Route path="/chat" element={<ChatPage />} />
@@ -35,7 +37,8 @@ const App = () => (
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/eval" element={<EvalDashboard />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

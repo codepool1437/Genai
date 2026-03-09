@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import chat, resume, cover_letter, interview, quiz, documents, roadmap, evaluate
+from app.api import chat, resume, cover_letter, interview, quiz, documents, roadmap, evaluate, profile
 from app.rag.seed_courses import seed_courses
 from app.rag.embedder import get_embedder
 
@@ -40,6 +40,7 @@ app.include_router(quiz.router,         prefix="/api")
 app.include_router(documents.router,    prefix="/api")
 app.include_router(roadmap.router,      prefix="/api")
 app.include_router(evaluate.router,     prefix="/api")
+app.include_router(profile.router,      prefix="/api")
 
 
 @app.get("/health")

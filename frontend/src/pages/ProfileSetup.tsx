@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { apiGet, apiPost, apiUrl } from "@/lib/api";
+import { toast } from "sonner";
 
 export interface UserProfile {
   name: string;
@@ -29,16 +31,40 @@ const emptyProfile: UserProfile = {
 const ProfileSetup = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem("career-profile");
-    return saved ? JSON.parse(saved) : emptyProfile;
+    try {
+      const saved = localStorage.getItem("career-profile");
+      return saved ? JSON.parse(saved) : emptyProfile;
+    } catch { return emptyProfile; }
   });
+  const [saving, setSaving] = useState(false);
+
+  // Hydrate from server on first load (overwrites localStorage if server has newer data)
+  useEffect(() => {
+    apiGet<{ profile: UserProfile | null }>("/api/profile")
+      .then(({ profile: serverProfile }) => {
+        if (serverProfile) {
+          setProfile({ ...emptyProfile, ...serverProfile });
+          localStorage.setItem("career-profile", JSON.stringify(serverProfile));
+        }
+      })
+      .catch(() => { /* offline — use localStorage value */ });
+  }, []);
 
   const handleChange = (field: keyof UserProfile, value: string) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setSaving(true);
+    // Save to localStorage immediately for instant availability
     localStorage.setItem("career-profile", JSON.stringify(profile));
+    try {
+      await apiPost("/api/profile", profile);
+    } catch {
+      toast.error("Could not save profile to server — saved locally only.");
+    } finally {
+      setSaving(false);
+    }
     navigate("/chat");
   };
 
@@ -148,11 +174,14 @@ const ProfileSetup = () => {
           <Button
             size="lg"
             className="w-full bg-teal text-teal-foreground hover:bg-teal/90 font-display font-semibold"
-            disabled={!isValid}
+            disabled={!isValid || saving}
             onClick={handleSubmit}
           >
-            Get My Career Plan
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {saving ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+            ) : (
+              <>Get My Career Plan <ArrowRight className="w-4 h-4 ml-2" /></>
+            )}
           </Button>
         </div>
       </main>

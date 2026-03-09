@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import {
     ArrowLeft,
     BookOpen,
@@ -15,7 +15,7 @@ import {
     Target,
     Zap,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { UserProfile } from "./ProfileSetup";
@@ -164,14 +164,24 @@ const RoadmapPage = () => {
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const profile: UserProfile | null = (() => {
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
     try {
-      const saved = localStorage.getItem("career-profile");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  })();
+      const s = localStorage.getItem("career-profile");
+      return s ? JSON.parse(s) : null;
+    } catch { return null; }
+  });
+
+  // Hydrate profile from server on mount
+  useEffect(() => {
+    apiGet<{ profile: UserProfile | null }>("/api/profile")
+      .then(({ profile: p }) => {
+        if (p) {
+          setProfile(p);
+          localStorage.setItem("career-profile", JSON.stringify(p));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const generate = useCallback(async () => {
     if (!profile) {

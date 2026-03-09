@@ -1,0 +1,2 @@
+# This directory holds server-side persisted data (profile.json, etc.)
+# It is intentionally kept out of git via .gitignore entries for *.json

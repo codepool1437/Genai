@@ -6,27 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  ArrowLeft,
-  BarChart3,
-  ChevronDown,
-  ChevronUp,
-  Download,
-  Loader2,
-  Play,
-  RefreshCw,
-  Sparkles,
+    ArrowLeft,
+    BarChart3,
+    ChevronDown,
+    ChevronUp,
+    Download,
+    Loader2,
+    Play,
+    RefreshCw,
+    Sparkles,
 } from "lucide-react";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  LabelList,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    LabelList,
+    Legend,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from "recharts";
 import { toast } from "sonner";
 

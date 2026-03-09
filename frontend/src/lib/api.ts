@@ -10,6 +10,16 @@ export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;
 }
 
+/** GET, returns parsed JSON response */
+export async function apiGet<T = unknown>(path: string): Promise<T> {
+  const res = await fetch(apiUrl(path));
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Request failed" }));
+    throw new Error(err.detail ?? err.error ?? "Request failed");
+  }
+  return res.json() as Promise<T>;
+}
+
 /** POST JSON, returns parsed JSON response */
 export async function apiPost<T = unknown>(path: string, body: unknown): Promise<T> {
   const res = await fetch(apiUrl(path), {

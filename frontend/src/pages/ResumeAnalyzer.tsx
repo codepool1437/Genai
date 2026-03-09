@@ -309,18 +309,31 @@ const ResumeAnalyzer = () => {
           </div>
         </Card>
 
-        {/* Loading State */}
+        {/* Loading Skeleton */}
         {analyzing && (
-          <Card className="p-8 text-center">
-            <Sparkles className="w-12 h-12 text-teal mx-auto mb-4 animate-pulse" />
-            <h3 className="font-display font-semibold text-lg text-card-foreground mb-2">
-              Analyzing Your Resume...
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Our AI is scoring your resume across ATS compatibility, content quality, skills, and presentation.
-            </p>
-            <Progress value={45} className="max-w-xs mx-auto" />
-          </Card>
+          <div className="space-y-4 animate-pulse" aria-label="Loading analysis…">
+            {/* Score circles row */}
+            <Card className="p-6">
+              <div className="h-4 bg-muted rounded w-40 mb-5" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="w-20 h-20 rounded-full bg-muted" />
+                    <div className="h-3 bg-muted rounded w-16" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+            {/* Strengths + Improvements cards */}
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-6 space-y-3">
+                <div className="h-4 bg-muted rounded w-32" />
+                <div className="h-3 bg-muted rounded w-full" />
+                <div className="h-3 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-5/6" />
+              </Card>
+            ))}
+          </div>
         )}
 
         {/* Auto-fill Profile Banner */}
