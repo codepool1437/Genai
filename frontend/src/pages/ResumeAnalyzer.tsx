@@ -11,17 +11,22 @@ import {
   AlertTriangle,
   ArrowLeft,
   BarChart3,
+  BookOpen,
   CheckCircle2,
   FileText,
   Lightbulb,
+  Loader2,
   Pen,
   Shield,
   Sparkles,
   Target,
   Upload,
+  UserCheck,
   Zap,
 } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 import { toast } from "sonner";
+import type { UserProfile } from "./ProfileSetup";
 
 interface Improvement {
   severity: "critical" | "warning" | "tip";
@@ -88,15 +93,24 @@ const ResumeAnalyzer = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [extractedProfile, setExtractedProfile] = useState<Partial<UserProfile> | null>(null);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [addingToKB, setAddingToKB] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const dropped = e.dataTransfer.files[0];
-    if (dropped && (dropped.type === "application/pdf" || dropped.type === "text/plain" || dropped.name.endsWith(".md"))) {
+    const ok = dropped && (
+      dropped.type === "application/pdf" ||
+      dropped.type === "text/plain" ||
+      dropped.name.endsWith(".md") ||
+      dropped.name.endsWith(".docx")
+    );
+    if (ok) {
       setFile(dropped);
     } else {
-      toast.error("Please upload a PDF, TXT, or MD file");
+      toast.error("Please upload a PDF, DOCX, TXT, or MD file");
     }
   }, []);
 
@@ -109,59 +123,54 @@ const ResumeAnalyzer = () => {
     if (!file) return;
     setAnalyzing(true);
     setAnalysis(null);
+    setExtractedProfile(null);
+    setProfileSaved(false);
 
     try {
-      let resumeText = "";
+      const isBinary = file.type === "application/pdf" || file.name.endsWith(".docx");
+      let pdfBase64: string | undefined;
+      let resumeText: string | undefined;
 
-      if (file.type === "application/pdf") {
-        // Send PDF as base64 to edge function for server-side parsing
+      if (isBinary) {
         const arrayBuffer = await file.arrayBuffer();
-        const base64 = btoa(
+        pdfBase64 = btoa(
           new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
         );
-
-        const resp = await fetch(
-          `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api/resume/analyze`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pdfBase64: base64, targetRole: targetRole || undefined }),
-          }
-        );
-
-        if (!resp.ok) {
-          const errData = await resp.json();
-          throw new Error(errData.error || "Analysis failed");
-        }
-
-        const result = await resp.json();
-        setAnalysis(result.analysis);
-        toast.success("Resume analysis complete!");
-        return;
       } else {
         resumeText = await file.text();
+        if (!resumeText || resumeText.trim().length < 20)
+          throw new Error("Could not extract enough text from the file.");
       }
 
-      if (!resumeText || resumeText.trim().length < 20) {
-        throw new Error("Could not extract enough text from the file.");
-      }
+      const payload = { pdfBase64, resumeText, filename: file.name, targetRole: targetRole || undefined };
+      const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
-      const resp = await fetch(
-        `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/api/resume/analyze`,
-        {
+      // Run analysis + profile extraction in parallel
+      const [analysisResp, profileResp] = await Promise.all([
+        fetch(`${API}/api/resume/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resumeText, targetRole: targetRole || undefined }),
-        }
-      );
+          body: JSON.stringify(payload),
+        }),
+        fetch(`${API}/api/resume/extract-profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }),
+      ]);
 
-      if (!resp.ok) {
-        const errData = await resp.json();
+      if (!analysisResp.ok) {
+        const errData = await analysisResp.json();
         throw new Error(errData.error || "Analysis failed");
       }
 
-      const result = await resp.json();
-      setAnalysis(result.analysis);
+      const [analysisResult, profileResult] = await Promise.all([
+        analysisResp.json(),
+        profileResp.ok ? profileResp.json() : Promise.resolve(null),
+      ]);
+
+      setAnalysis(analysisResult.analysis);
+      if (profileResult?.profile) setExtractedProfile(profileResult.profile);
       toast.success("Resume analysis complete!");
     } catch (err: any) {
       console.error("Analysis error:", err);
@@ -169,6 +178,37 @@ const ResumeAnalyzer = () => {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const addToKnowledgeBase = async () => {
+    if (!file) return;
+    setAddingToKB(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("doc_type", "resume");
+      const resp = await fetch(apiUrl("/api/documents/upload"), { method: "POST", body: form });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ detail: "Upload failed" }));
+        throw new Error(err.detail ?? "Upload failed");
+      }
+      toast.success("Resume added to knowledge base! The AI can now reference it in chat.");
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to add to knowledge base");
+    } finally {
+      setAddingToKB(false);
+    }
+  };
+
+  const saveToProfile = () => {
+    if (!extractedProfile) return;
+    const existing: Partial<UserProfile> = (() => {
+      try { return JSON.parse(localStorage.getItem("career-profile") || "{}"); } catch { return {}; }
+    })();
+    const merged = { ...existing, ...Object.fromEntries(Object.entries(extractedProfile).filter(([, v]) => v)) };
+    localStorage.setItem("career-profile", JSON.stringify(merged));
+    setProfileSaved(true);
+    toast.success("Profile updated from your resume!");
   };
 
   const criticalCount = analysis?.improvements.filter((i) => i.severity === "critical").length || 0;
@@ -223,9 +263,9 @@ const ResumeAnalyzer = () => {
               <>
                 <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-card-foreground font-medium mb-1">Drop your resume here</p>
-                <p className="text-sm text-muted-foreground mb-4">PDF, TXT, or MD files</p>
+                <p className="text-sm text-muted-foreground mb-4">PDF, DOCX, TXT, or MD files</p>
                 <label>
-                  <input type="file" accept=".pdf,.txt,.md" className="hidden" onChange={handleFileSelect} />
+                  <input type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={handleFileSelect} />
                   <Button variant="outline" size="sm" asChild><span>Browse Files</span></Button>
                 </label>
               </>
@@ -256,6 +296,17 @@ const ResumeAnalyzer = () => {
                 </>
               )}
             </Button>
+            <Button
+              variant="outline"
+              onClick={addToKnowledgeBase}
+              disabled={!file || addingToKB}
+            >
+              {addingToKB ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding...</>
+              ) : (
+                <><BookOpen className="w-4 h-4 mr-2" />Add to Knowledge Base</>
+              )}
+            </Button>
           </div>
         </Card>
 
@@ -270,6 +321,38 @@ const ResumeAnalyzer = () => {
               Our AI is scoring your resume across ATS compatibility, content quality, skills, and presentation.
             </p>
             <Progress value={45} className="max-w-xs mx-auto" />
+          </Card>
+        )}
+
+        {/* Auto-fill Profile Banner */}
+        {extractedProfile && (
+          <Card className="p-5 border-teal/40 bg-teal/5">
+            <div className="flex items-start gap-4 flex-wrap">
+              <UserCheck className="w-6 h-6 text-teal shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-semibold text-foreground mb-0.5">
+                  Profile data detected in your resume
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
+                  {extractedProfile.name && <span><strong>Name:</strong> {extractedProfile.name}</span>}
+                  {extractedProfile.currentRole && <span><strong>Role:</strong> {extractedProfile.currentRole}</span>}
+                  {extractedProfile.education && <span><strong>Education:</strong> {extractedProfile.education}</span>}
+                  {extractedProfile.experience && <span><strong>Experience:</strong> {extractedProfile.experience}</span>}
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={saveToProfile}
+                disabled={profileSaved}
+                className="bg-teal text-teal-foreground hover:bg-teal/90 shrink-0"
+              >
+                {profileSaved ? (
+                  <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />Saved!</>
+                ) : (
+                  <><UserCheck className="w-3.5 h-3.5 mr-1.5" />Auto-fill Profile</>
+                )}
+              </Button>
+            </div>
           </Card>
         )}
 
@@ -356,40 +439,48 @@ const ResumeAnalyzer = () => {
               </Accordion>
             </Card>
 
-            {/* Skills & Keywords */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h2 className="font-display font-semibold text-lg text-card-foreground mb-4 flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-teal" />
-                  Detected Skills
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {analysis.detected_skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="bg-teal/10 text-teal border-teal/20">
-                      {skill}
-                    </Badge>
-                  ))}
+            {/* Skill Gap Analysis */}
+            <Card className="p-6">
+              <h2 className="font-display font-semibold text-lg text-card-foreground mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-teal" />
+                Skill Gap Analysis
+                {targetRole && (
+                  <span className="text-sm font-normal text-muted-foreground ml-1">vs. {targetRole}</span>
+                )}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-teal" /> You Have ({analysis.detected_skills.length})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysis.detected_skills.map((skill) => (
+                      <Badge key={skill} variant="secondary" className="bg-teal/10 text-teal border-teal/20 text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
+                    {analysis.detected_skills.length === 0 && (
+                      <p className="text-xs text-muted-foreground">No skills detected</p>
+                    )}
+                  </div>
                 </div>
-              </Card>
-
-              <Card className="p-6">
-                <h2 className="font-display font-semibold text-lg text-card-foreground mb-4 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-amber-500" />
-                  Missing Keywords
-                </h2>
-                {analysis.missing_keywords.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> You Need ({analysis.missing_keywords.length})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
                     {analysis.missing_keywords.map((kw) => (
-                      <Badge key={kw} variant="outline" className="border-amber-500/30 text-amber-600">
+                      <Badge key={kw} variant="outline" className="border-amber-500/30 text-amber-600 text-xs">
                         + {kw}
                       </Badge>
                     ))}
+                    {analysis.missing_keywords.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Great coverage — no critical keywords missing.</p>
+                    )}
                   </div>
-                ) : (
-                  <p className="text-muted-foreground text-sm">Great coverage! No critical keywords missing.</p>
-                )}
-              </Card>
-            </div>
+                </div>
+              </div>
+            </Card>
           </>
         )}
       </main>

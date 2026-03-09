@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Target, Sparkles, ArrowRight, BookOpen, TrendingUp, Users, FileText, Briefcase, Brain, Mic, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, BookOpen, Brain, Briefcase, FileText, Map, Mic, Sparkles, Target, TrendingUp, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {

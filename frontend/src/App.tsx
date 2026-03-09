@@ -1,18 +1,18 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import ProfileSetup from "./pages/ProfileSetup";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ChatPage from "./pages/ChatPage";
-import KnowledgeBase from "./pages/KnowledgeBase";
-import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import CoverLetterGenerator from "./pages/CoverLetterGenerator";
-import SkillQuiz from "./pages/SkillQuiz";
+import Index from "./pages/Index";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import MockInterview from "./pages/MockInterview";
-import RoadmapPage from "./pages/Roadmap";
 import NotFound from "./pages/NotFound";
+import ProfileSetup from "./pages/ProfileSetup";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
+import RoadmapPage from "./pages/Roadmap";
+import SkillQuiz from "./pages/SkillQuiz";
 
 const queryClient = new QueryClient();
 

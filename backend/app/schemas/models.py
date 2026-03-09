@@ -33,6 +33,7 @@ class RoadmapRequest(BaseModel):
 class ResumeRequest(BaseModel):
     resumeText: Optional[str] = None
     pdfBase64: Optional[str] = None
+    filename: Optional[str] = None
     targetRole: Optional[str] = None
 
 

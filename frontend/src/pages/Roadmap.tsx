@@ -1,22 +1,22 @@
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Loader2,
-  Map,
-  Sparkles,
-  Target,
-  Zap,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { apiPost } from "@/lib/api";
+import {
+    ArrowLeft,
+    BookOpen,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
+    ExternalLink,
+    Loader2,
+    Map,
+    Sparkles,
+    Target,
+    Zap,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { UserProfile } from "./ProfileSetup";
 

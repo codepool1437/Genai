@@ -1,23 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { apiUrl } from "@/lib/api";
 import {
-  ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  FileText,
-  Loader2,
-  Trash2,
-  Upload,
-  XCircle,
+    ArrowLeft,
+    BookOpen,
+    CheckCircle2,
+    Clock,
+    FileText,
+    Loader2,
+    Trash2,
+    Upload,
+    XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

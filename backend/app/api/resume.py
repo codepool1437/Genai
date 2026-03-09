@@ -3,20 +3,29 @@ import io
 import json
 import re
 import ollama
+from docx import Document as DocxDocument
 from fastapi import APIRouter
 from pypdf import PdfReader
 
 from app.schemas.models import ResumeRequest
-from app.rag.prompts import RESUME_ANALYSIS_SYSTEM
+from app.rag.prompts import RESUME_ANALYSIS_SYSTEM, RESUME_EXTRACT_PROFILE_SYSTEM
 
 router = APIRouter()
 MODEL = "llama3.2:3b"
 
 
-def _extract_pdf_text(b64: str) -> str:
-    pdf_bytes = base64.b64decode(b64)
-    reader = PdfReader(io.BytesIO(pdf_bytes))
-    return "\n".join(page.extract_text() or "" for page in reader.pages)
+def _extract_text(req: ResumeRequest) -> str:
+    """Extract plain text from PDF (base64), DOCX (base64), or raw resumeText."""
+    if req.pdfBase64:
+        raw_bytes = base64.b64decode(req.pdfBase64)
+        fname = (req.filename or "").lower()
+        if fname.endswith(".docx"):
+            doc = DocxDocument(io.BytesIO(raw_bytes))
+            return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+        else:
+            reader = PdfReader(io.BytesIO(raw_bytes))
+            return "\n".join(page.extract_text() or "" for page in reader.pages)
+    return req.resumeText or ""
 
 
 def _safe_json(raw: str) -> dict:
@@ -27,16 +36,31 @@ def _safe_json(raw: str) -> dict:
     raise ValueError("No JSON object found in LLM response")
 
 
+@router.post("/resume/extract-profile")
+async def extract_profile(req: ResumeRequest):
+    """Extract structured profile fields from a resume for auto-filling the profile form."""
+    resume_text = _extract_text(req)
+    if not resume_text.strip():
+        return {"profile": None, "error": "Could not extract text."}
+    try:
+        response = ollama.chat(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": RESUME_EXTRACT_PROFILE_SYSTEM},
+                {"role": "user",   "content": resume_text[:5000]},
+            ],
+            format="json",
+            options={"temperature": 0.1},
+        )
+        profile = _safe_json(response["message"]["content"])
+        return {"profile": profile}
+    except Exception as e:
+        return {"profile": None, "error": str(e)}
+
+
 @router.post("/resume/analyze")
 async def analyze_resume(req: ResumeRequest):
-    # Extract text from whichever source was provided
-    if req.pdfBase64:
-        try:
-            resume_text = _extract_pdf_text(req.pdfBase64)
-        except Exception:
-            resume_text = req.resumeText or ""
-    else:
-        resume_text = req.resumeText or ""
+    resume_text = _extract_text(req)
 
     if not resume_text.strip():
         return {"analysis": None, "error": "Could not extract text from resume."}

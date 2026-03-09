@@ -16,6 +16,21 @@ When a user first provides their profile, respond with a structured career guida
 
 For follow-up questions, provide focused, actionable answers. Always ground advice in the course database provided. Use markdown formatting with clear headers, bullet points, and emphasis."""
 
+RESUME_EXTRACT_PROFILE_SYSTEM = """Extract structured profile data from the resume.
+
+Return ONLY valid JSON — no markdown, no extra text. Use empty strings for missing fields.
+
+{
+  "name": "<full name>",
+  "currentRole": "<most recent job title>",
+  "education": "<highest degree, field, institution>",
+  "skills": "<comma-separated technical and soft skills>",
+  "experience": "<e.g. 2 years, fresher, 6 months>",
+  "industries": "<comma-separated industries the candidate has worked in>",
+  "goals": "<inferred career goal in one sentence based on the resume>"
+}"""
+
+
 RESUME_ANALYSIS_SYSTEM = """You are an expert ATS (Applicant Tracking System) analyzer and career coach.
 
 Analyze the resume and return ONLY a valid JSON object — no other text, no markdown, just raw JSON.
