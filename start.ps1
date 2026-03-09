@@ -64,7 +64,7 @@ Write-Host ""
 
 # 2. Start FastAPI backend (new PowerShell window)
 Write-Host "  [2/3] Starting FastAPI backend (new window)..." -ForegroundColor Cyan
-$backendCmd = "Set-Location '$backend'; & '$uvicorn' app.main:app --port 8000 --reload; Read-Host 'Press Enter to close'"
+$backendCmd = "Set-Location '$backend'; & '$uvicorn' app.main:app --host 0.0.0.0 --port 8000 --reload; Read-Host 'Press Enter to close'"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd
 Write-Host "        Backend will be at http://localhost:8000" -ForegroundColor DarkGray
 Write-Host ""
