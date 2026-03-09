@@ -1,5 +1,5 @@
 """
-Course seed data — 120+ real courses across 20 skill areas.
+Course seed data — 100+ real courses across 25 skill areas.
 Each course has a rich `text` field that gets embedded so semantic search works well.
 """
 
@@ -376,4 +376,187 @@ COURSES: list[dict] = [
      "platform": "Udemy", "level": "Intermediate", "duration": "3 weeks", "free": False,
      "url": "https://www.udemy.com/course/mlflow-for-machine-learning/",
      "text": "MLflow experiment tracking, model registry, artifact storage, and deployment. Integrate with scikit-learn, TensorFlow, and PyTorch for reproducible ML experiments."},
+
+    {"id": "mlops-3", "skill": "MLOps", "title": "Kubeflow Pipelines for ML",
+     "platform": "Kubeflow Docs (free)", "level": "Advanced", "duration": "4 weeks", "free": True,
+     "url": "https://www.kubeflow.org/docs/components/pipelines/",
+     "text": "Orchestrate ML workflows with Kubeflow Pipelines: components, graphs, persistent volumes, metadata tracking, and deploying ML pipelines on Kubernetes clusters."},
+
+    {"id": "mlops-4", "skill": "MLOps", "title": "AWS SageMaker for ML Engineers",
+     "platform": "Udemy", "level": "Advanced", "duration": "6 weeks", "free": False,
+     "url": "https://www.udemy.com/course/aws-sagemaker-practical-course/",
+     "text": "End-to-end machine learning on AWS SageMaker: training jobs, hyperparameter tuning, model endpoints, batch transform, Feature Store, Model Monitor, and CI/CD pipelines for ML."},
+
+    # ── NLP / GenAI (extended) ────────────────────────────────────────────────
+    {"id": "nlp-6", "skill": "NLP / GenAI", "title": "Prompt Engineering for Developers",
+     "platform": "DeepLearning.AI (free)", "level": "Beginner", "duration": "1 week", "free": True,
+     "url": "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/",
+     "text": "Prompting best practices for LLM application developers: summarising, inferring, transforming, expanding text, building a chatbot. Co-taught by OpenAI."},
+
+    {"id": "nlp-7", "skill": "NLP / GenAI", "title": "AI Agents in LangGraph",
+     "platform": "DeepLearning.AI (free)", "level": "Advanced", "duration": "1 week", "free": True,
+     "url": "https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/",
+     "text": "Build agentic workflows with LangGraph: ReAct agents, tool calling, human-in-the-loop, multi-agent architectures, and memory-persistent agents."},
+
+    {"id": "nlp-8", "skill": "NLP / GenAI", "title": "Run Local LLMs with Ollama",
+     "platform": "Ollama Docs / YouTube (free)", "level": "Beginner", "duration": "1 week", "free": True,
+     "url": "https://ollama.com/",
+     "text": "Run open-source LLMs locally: Llama 3, Mistral, Gemma, Phi-3. Custom system prompts, REST API usage, model fine-tuning with Modelfiles, and integrating with Python apps."},
+
+    # ── Computer Vision (extended) ────────────────────────────────────────────
+    {"id": "cv-3", "skill": "Computer Vision", "title": "MediaPipe for Real-Time CV Applications",
+     "platform": "Google / YouTube (free)", "level": "Intermediate", "duration": "2 weeks", "free": True,
+     "url": "https://developers.google.com/mediapipe",
+     "text": "Build real-time computer vision apps with Google MediaPipe: pose estimation, hand tracking, face detection, object detection, and gesture recognition on CPU in Python."},
+
+    {"id": "cv-4", "skill": "Computer Vision", "title": "PyTorch for Computer Vision",
+     "platform": "Udemy", "level": "Advanced", "duration": "6 weeks", "free": False,
+     "url": "https://www.udemy.com/course/pytorch-for-deep-learning/",
+     "text": "Computer vision with PyTorch: custom datasets, transforms, CNNs, transfer learning with ResNet/EfficientNet, object detection with YOLO, semantic segmentation, and model deployment."},
+
+    # ── Mobile Development (extended) ─────────────────────────────────────────
+    {"id": "mob-3", "skill": "Mobile Development", "title": "SwiftUI for iOS Development",
+     "platform": "Hacking with Swift (free)", "level": "Beginner", "duration": "2 months", "free": True,
+     "url": "https://www.hackingwithswift.com/100swiftui",
+     "text": "100 Days of SwiftUI: views, modifiers, state management, navigation, data persistence with Core Data, networking, and publishing apps to the App Store."},
+
+    {"id": "mob-4", "skill": "Mobile Development", "title": "Kotlin for Android Development",
+     "platform": "Google / Udacity (free)", "level": "Beginner", "duration": "2 months", "free": True,
+     "url": "https://developer.android.com/courses",
+     "text": "Official Android development with Kotlin: Jetpack Compose UI, ViewModel, LiveData, Room database, Navigation component, Retrofit for networking, and publishing to Google Play."},
+
+    # ── Blockchain (extended) ─────────────────────────────────────────────────
+    {"id": "bc-2", "skill": "Blockchain", "title": "Solidity & Smart Contracts — Full Course",
+     "platform": "freeCodeCamp YouTube (free)", "level": "Intermediate", "duration": "16 hours", "free": True,
+     "url": "https://www.youtube.com/watch?v=gyMwXuJrbJQ",
+     "text": "Comprehensive Solidity tutorial: ERC20 tokens, NFTs, DeFi protocols, Hardhat testing environment, deploying to testnets and mainnet, security vulnerabilities and auditing."},
+
+    {"id": "bc-3", "skill": "Blockchain", "title": "Web3.js and Ethers.js for DApp Development",
+     "platform": "Udemy", "level": "Intermediate", "duration": "4 weeks", "free": False,
+     "url": "https://www.udemy.com/course/complete-ethereum-solidity-course/",
+     "text": "Build decentralised applications with React, Ethers.js, MetaMask: wallet integration, smart contract interaction, IPFS storage, and deploying full-stack DApps."},
+
+    # ── System Design (extended) ──────────────────────────────────────────────
+    {"id": "sd-3", "skill": "System Design", "title": "System Design Interview Vol. 1 & 2",
+     "platform": "Book (Alex Xu)", "level": "Advanced", "duration": "Self-paced", "free": False,
+     "url": "https://www.amazon.com/System-Design-Interview-insiders-Second/dp/B08CMF2CQF",
+     "text": "Alex Xu's canonical system design interview book. Design rate limiters, consistent hashing, key-value stores, URL shorteners, web crawlers, notification systems, and YouTube."},
+
+    {"id": "sd-4", "skill": "System Design", "title": "Microservices Patterns",
+     "platform": "Manning / Chris Richardson", "level": "Advanced", "duration": "Self-paced", "free": False,
+     "url": "https://microservices.io/",
+     "text": "Microservices architecture patterns: decomposition, API gateway, service discovery, circuit breaker, CQRS, event sourcing, sagas, and testing microservices."},
+
+    {"id": "sd-5", "skill": "System Design", "title": "ByteByteGo System Design",
+     "platform": "ByteByteGo Newsletter (free tier)", "level": "Advanced", "duration": "Self-paced", "free": True,
+     "url": "https://bytebytego.com/",
+     "text": "Visual system design explanations: how Netflix CDN works, how Uber matches drivers, database sharding strategies, distributed caching, consensus algorithms (Raft, Paxos)."},
+
+    # ── Data Engineering (extended) ───────────────────────────────────────────
+    {"id": "de-3", "skill": "Data Engineering", "title": "Apache Kafka for Data Engineers",
+     "platform": "Confluent (free)", "level": "Intermediate", "duration": "3 weeks", "free": True,
+     "url": "https://developer.confluent.io/learn-kafka/",
+     "text": "Apache Kafka fundamentals: producers, consumers, topics, partitions, consumer groups, Kafka Streams, ksqlDB, connectors, and building real-time data pipelines."},
+
+    {"id": "de-4", "skill": "Data Engineering", "title": "dbt (Data Build Tool) Fundamentals",
+     "platform": "dbt Learn (free)", "level": "Intermediate", "duration": "2 weeks", "free": True,
+     "url": "https://courses.getdbt.com/courses/fundamentals",
+     "text": "Transform data with dbt: models, tests, documentation, macros, seeds, snapshots, and deploying dbt projects with dbt Cloud and GitHub Actions."},
+
+    {"id": "de-5", "skill": "Data Engineering", "title": "Apache Airflow for Pipeline Orchestration",
+     "platform": "Astronomer Academy (free)", "level": "Intermediate", "duration": "3 weeks", "free": True,
+     "url": "https://academy.astronomer.io/",
+     "text": "Orchestrate data pipelines with Apache Airflow: DAGs, operators, hooks, sensors, XComs, dynamic task mapping, TaskFlow API, and deploying on Astronomer or MWAA."},
+
+    # ── Mathematics for ML (extended) ─────────────────────────────────────────
+    {"id": "math-3", "skill": "Mathematics for ML", "title": "Statistics and Probability",
+     "platform": "Khan Academy (free)", "level": "Beginner", "duration": "Self-paced", "free": True,
+     "url": "https://www.khanacademy.org/math/statistics-probability",
+     "text": "Statistics fundamentals from scratch: descriptive statistics, probability distributions (normal, binomial, Poisson), hypothesis testing, confidence intervals, regression, and Bayesian inference."},
+
+    {"id": "math-4", "skill": "Mathematics for ML", "title": "Convex Optimization — Stanford",
+     "platform": "Stanford Online (free)", "level": "Advanced", "duration": "10 weeks", "free": True,
+     "url": "https://web.stanford.edu/~boyd/cvxbook/",
+     "text": "Mathematical optimisation for ML: convex functions, duality, gradient descent, stochastic gradient descent, Adam, convergence proofs, and regularisation theory."},
+
+    # ── Software Engineering (extended) ───────────────────────────────────────
+    {"id": "swe-4", "skill": "Software Engineering", "title": "Design Patterns — Gang of Four",
+     "platform": "Refactoring.Guru (free)", "level": "Advanced", "duration": "Self-paced", "free": True,
+     "url": "https://refactoring.guru/design-patterns",
+     "text": "GoF design patterns with Python/Java examples: creational (Factory, Builder, Singleton), structural (Adapter, Decorator, Facade), behavioural (Strategy, Observer, Command)."},
+
+    {"id": "swe-5", "skill": "Software Engineering", "title": "Test-Driven Development with Python",
+     "platform": "O'Reilly (Harry Percival)", "level": "Intermediate", "duration": "Self-paced", "free": True,
+     "url": "https://www.obeythetestinggoat.com/",
+     "text": "TDD with Python and Django: writing failing tests first, unit tests, integration tests, mocking, fixtures, Selenium for functional tests, and continuous integration."},
+
+    # ── Product Management (extended) ─────────────────────────────────────────
+    {"id": "pm-3", "skill": "Product Management", "title": "Agile Project Management",
+     "platform": "Coursera (Google)", "level": "Beginner", "duration": "6 weeks", "free": False,
+     "url": "https://www.coursera.org/learn/agile-project-management",
+     "text": "Agile and Scrum for project management: sprints, backlogs, story points, retrospectives, Kanban boards, Jira, and scaling agile with SAFe framework."},
+
+    # ── UI/UX Design (extended) ───────────────────────────────────────────────
+    {"id": "ux-3", "skill": "UI/UX Design", "title": "Responsive Web Design",
+     "platform": "freeCodeCamp (free)", "level": "Beginner", "duration": "4 weeks", "free": True,
+     "url": "https://www.freecodecamp.org/learn/2022/responsive-web-design/",
+     "text": "HTML and CSS fundamentals, flexbox, grid, responsive design, media queries, accessibility best practices, and building real-world projects like a portfolio and survey form."},
+
+    {"id": "ux-4", "skill": "UI/UX Design", "title": "Design Systems with Figma",
+     "platform": "Figma Community (free)", "level": "Intermediate", "duration": "2 weeks", "free": True,
+     "url": "https://www.figma.com/resource-library/what-is-a-design-system/",
+     "text": "Create scalable design systems: token-based design, component libraries, typography scales, colour palettes, dark mode, documentation, and handing off to engineering teams."},
+
+    # ── R Programming ─────────────────────────────────────────────────────────
+    {"id": "r-1", "skill": "R Programming", "title": "R Programming — Coursera (JHU)",
+     "platform": "Coursera (Johns Hopkins)", "level": "Beginner", "duration": "4 weeks", "free": False,
+     "url": "https://www.coursera.org/learn/r-programming",
+     "text": "R fundamentals for statistical computing: data types, control structures, functions, scoping, vectorised operations, simulation, debugging, and profiling R code."},
+
+    {"id": "r-2", "skill": "R Programming", "title": "Tidyverse and ggplot2 for Data Science",
+     "platform": "R for Data Science Book (free)", "level": "Intermediate", "duration": "Self-paced", "free": True,
+     "url": "https://r4ds.hadley.nz/",
+     "text": "Data science with R: data import, tidying with tidyr, transformation with dplyr, visualisation with ggplot2, functional programming with purrr, and Quarto notebooks."},
+
+    {"id": "r-3", "skill": "R Programming", "title": "Statistical Inference with R",
+     "platform": "Coursera (JHU)", "level": "Intermediate", "duration": "4 weeks", "free": False,
+     "url": "https://www.coursera.org/learn/statistical-inference",
+     "text": "Inference and hypothesis testing in R: probability, distributions, CLT, confidence intervals, t-tests, chi-square tests, ANOVA, power analysis, and resampling methods."},
+
+    # ── TypeScript ────────────────────────────────────────────────────────────
+    {"id": "ts-1", "skill": "TypeScript", "title": "TypeScript Full Course",
+     "platform": "freeCodeCamp YouTube (free)", "level": "Beginner", "duration": "8 hours", "free": True,
+     "url": "https://www.youtube.com/watch?v=30LWjhZzg50",
+     "text": "TypeScript from beginner to advanced: types, interfaces, generics, enums, decorators, module systems, type narrowing, utility types (Partial, Record, Pick), and strict mode."},
+
+    {"id": "ts-2", "skill": "TypeScript", "title": "TypeScript with React",
+     "platform": "Udemy (Maximilian Schwarzmüller)", "level": "Intermediate", "duration": "4 weeks", "free": False,
+     "url": "https://www.udemy.com/course/react-typescript-the-practical-guide/",
+     "text": "Type-safe React development with TypeScript: component props typing, hooks, context, Redux Toolkit with TypeScript, React Router types, and integrating third-party libraries."},
+
+    # ── Career Skills ────────────────────────────────────────────────────────
+    {"id": "career-1", "skill": "Career Skills", "title": "Technical Interview Prep — Blind 75",
+     "platform": "LeetCode (free)", "level": "Intermediate", "duration": "2 months", "free": True,
+     "url": "https://leetcode.com/discuss/general-discussion/460599/blind-75-leetcode-questions",
+     "text": "75 must-solve LeetCode problems for FAANG interviews: arrays, binary search, trees, graphs, dynamic programming, linked lists, strings, and system design."},
+
+    {"id": "career-2", "skill": "Career Skills", "title": "How to Write a Great Resume for Tech Jobs",
+     "platform": "YouTube / TechLead (free)", "level": "Beginner", "duration": "1 week", "free": True,
+     "url": "https://www.youtube.com/",
+     "text": "Resume writing for software engineering and data science jobs: quantifying impact, keyword optimisation for ATS, project descriptions, skills section, and GitHub portfolio setup."},
+
+    {"id": "career-3", "skill": "Career Skills", "title": "Cracking the Coding Interview",
+     "platform": "Book (Gayle McDowell)", "level": "Intermediate", "duration": "Self-paced", "free": False,
+     "url": "https://www.amazon.com/Cracking-Coding-Interview-Programming-Questions/dp/0984782850",
+     "text": "The definitive coding interview book: 189 programming problems with solutions, big-O analysis, system design, behavioural questions, and interview strategies for top tech companies."},
+
+    {"id": "career-4", "skill": "Career Skills", "title": "LinkedIn Profile Optimisation",
+     "platform": "LinkedIn Learning (free trial)", "level": "Beginner", "duration": "2 hours", "free": True,
+     "url": "https://www.linkedin.com/learning/",
+     "text": "Build a standout LinkedIn profile: headline, summary, skills endorsements, featured section, networking strategies, cold outreach templates, and getting recruiter attention."},
+
+    {"id": "career-5", "skill": "Career Skills", "title": "Negotiating Your Salary",
+     "platform": "Levels.fyi / Glassdoor (free)", "level": "Beginner", "duration": "1 week", "free": True,
+     "url": "https://www.levels.fyi/",
+     "text": "Salary negotiation for tech professionals: researching market rates, counter-offer strategies, total compensation (base, equity, bonus), and negotiating remote work and benefits."},
 ]
