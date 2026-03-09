@@ -1,0 +1,58 @@
+[
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_0",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 0,
+    "text": "LANGUAGES\nEnglish\nHindi\nMarathi\nCONTACT\n+91 8591981125\njaydipc1437@gmail.com\nPune, Maharashtra\n411048\nSKILLS\nProgramming Languages:\nJava, Python, JavaScript,\nTypeScript\nWeb Development:\nReact.js, Node.js, Tailwind CSS,\nHTML, CSS, Express.js\nTools & Technologies:\nGit, GitHub, VS Code, MongoDB,\nnpm\nProblem Solving & DSA:\nData Structures and Algorithms\n(DSA), Competitive Programming\n(LeetCode, Codeforces, etc.)\nOther:\nResponsive UI Design, Basic SQL,\nFamiliarity with Linux/CLIJAYDIP CHAVAN\nPROFILE\n"
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_1",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 1,
+    "text": "rces, etc.)\nOther:\nResponsive UI Design, Basic SQL,\nFamiliarity with Linux/CLIJAYDIP CHAVAN\nPROFILE\nThird-year Computer Engineering student with a strong interest in ML and\nFrontend Development. Currently learning ML concepts hands-on while\nbuilding small-scale projects. Comfortable with React, JavaScript, and\nTailwind, with past experience developing functional UI components.\nEager to apply problem-solving skills and grow in a dynamic startup\nenvironment. Open to learning new technologies, espe"
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_2",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 2,
+    "text": "em-solving skills and grow in a dynamic startup\nenvironment. Open to learning new technologies, especially in the AI/ML\ndomain, and contributing meaningfully to innovative products.\nEDUCATION\n2023-2027 Bachelor of Technology in Computer Engineering\nVishwakarma Institute of Information Technology,Pune\n2022-2023\nHSC (Higher Secondary Certificate)\nB.K. Birla College of Arts,Commerce & Science,Kalyan\nPercentage: 74.33\nSSC (Secondary School Certificate)\nSaraswati Mandir,Kalyan\nPercentage: 95.202020-2"
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_3",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 3,
+    "text": "Percentage: 74.33\nSSC (Secondary School Certificate)\nSaraswati Mandir,Kalyan\nPercentage: 95.202020-2021PROJECTS\nFarmezy – Agri-based Marketplace UI\nA frontend web application simulating an agricultural product marketplace.\nBuilt using TypeScript, React.js, and Tailwind CSS\nDesigned responsive UI with components for product listing, cart, and category\nfilters\nUtilized Node.js environment for development and planned backend setup\nStructured for future backend integration and API handling with Node"
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_4",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 4,
+    "text": "pment and planned backend setup\nStructured for future backend integration and API handling with Node.js and\nExpress (in progress)\nLink :Click Here\nSource Code: Click Here\nEduManager – School Website Enrollment Platform\nA web-based platform that allows schools to register and request personalized\nwebsites.\nDeveloped using TypeScript, React.js, and Tailwind CSS\nImplemented Sign Up / Sign In with form validation and OTP-based email\nverification\nIntegrated a basic backend and database to store schoo"
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_5",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 5,
+    "text": "m validation and OTP-based email\nverification\nIntegrated a basic backend and database to store school registration details\nBuilt APIs to handle authentication and data persistence\nDesigned primarily for laptop/desktop layout (not mobile responsive)\nLive: Click Here\nSource Code: Click Here\nSpotify Homepage Clone\nClone of Spotify’s homepage built using HTML, CSS & JavaScript.\nLive: Click Here\nSource Code: Click Here\nNetflix Homepage Clone\nA responsive static clone of Netflix’s homepage using HTML "
+  },
+  {
+    "id": "e428e272-68a0-49fc-a8ce-017e4a2664b3__chunk_6",
+    "parent_id": "e428e272-68a0-49fc-a8ce-017e4a2664b3",
+    "file_name": "Jaydip_Chavan_Internship_CV (1).pdf",
+    "doc_type": "career_guide",
+    "chunk_index": 6,
+    "text": " Code: Click Here\nNetflix Homepage Clone\nA responsive static clone of Netflix’s homepage using HTML and CSS only.\nSource Code: Click Here\nLive: Click HereCGPA: 8.8 (Latest)"
+  }
+]
