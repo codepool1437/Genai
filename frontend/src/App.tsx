@@ -13,6 +13,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import RoadmapPage from "./pages/Roadmap";
 import SkillQuiz from "./pages/SkillQuiz";
+import EvalDashboard from "./pages/EvalDashboard";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/skill-quiz" element={<SkillQuiz />} />
           <Route path="/mock-interview" element={<MockInterview />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/eval" element={<EvalDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Brain, Briefcase, FileText, Map, Mic, Sparkles, Target, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, Brain, Briefcase, FileText, Map, Mic, Sparkles, Target, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const features = [
@@ -135,6 +135,15 @@ const Index = () => {
             >
               <Mic className="w-4 h-4 mr-2" />
               Mock Interview
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              onClick={() => navigate("/eval")}
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              RAG Eval
             </Button>
           </div>
         </div>

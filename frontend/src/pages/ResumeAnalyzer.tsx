@@ -7,24 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  BarChart3,
-  BookOpen,
-  CheckCircle2,
-  FileText,
-  Lightbulb,
-  Loader2,
-  Pen,
-  Shield,
-  Sparkles,
-  Target,
-  Upload,
-  UserCheck,
-  Zap,
-} from "lucide-react";
 import { apiUrl } from "@/lib/api";
+import {
+    AlertTriangle,
+    ArrowLeft,
+    BarChart3,
+    BookOpen,
+    CheckCircle2,
+    FileText,
+    Lightbulb,
+    Loader2,
+    Pen,
+    Sparkles,
+    Target,
+    Upload,
+    UserCheck,
+    Zap
+} from "lucide-react";
 import { toast } from "sonner";
 import type { UserProfile } from "./ProfileSetup";
 
