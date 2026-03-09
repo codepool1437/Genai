@@ -96,10 +96,18 @@ const KnowledgeBase = () => {
 
         setUploadProgress(50);
 
-        const resp = await fetch(apiUrl("/api/documents/upload"), {
-          method: "POST",
-          body: form,
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
+        let resp: Response;
+        try {
+          resp = await fetch(apiUrl("/api/documents/upload"), {
+            method: "POST",
+            body: form,
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         setUploadProgress(90);
 

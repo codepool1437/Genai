@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 from pathlib import Path
@@ -54,8 +55,9 @@ async def upload_document(
     dest = UPLOAD_DIR / f"{doc_id}{ext}"
     dest.write_bytes(content)
 
-    # Index into vector store
-    meta = ingest_file(
+    # Index into vector store — run in thread pool so we don't block the event loop
+    meta = await asyncio.to_thread(
+        ingest_file,
         filename=file.filename or f"upload{ext}",
         raw_bytes=content,
         doc_id=doc_id,
