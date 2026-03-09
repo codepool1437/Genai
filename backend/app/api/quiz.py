@@ -1,13 +1,12 @@
 import json
 import re
-import ollama
 from fastapi import APIRouter
 
 from app.schemas.models import QuizRequest
 from app.rag.prompts import QUIZ_GENERATE_PROMPT, QUIZ_EVALUATE_PROMPT
+from app.llm import chat
 
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 
 def _safe_json(raw: str) -> dict:
@@ -28,14 +27,13 @@ async def quiz_handler(req: QuizRequest):
             difficulty_hint=difficulty_hint,
         )
         try:
-            response = ollama.chat(
-                model=MODEL,
+            response = chat(
                 messages=[
                     {"role": "system", "content": "You are a technical quiz generator. Return ONLY valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
-                format="json",
-                options={"temperature": 0.5},
+                temperature=0.5,
+                json_mode=True,
             )
             raw = response["message"]["content"]
             data = _safe_json(raw)
@@ -80,14 +78,13 @@ async def quiz_handler(req: QuizRequest):
             percentage=percentage,
         )
         try:
-            response = ollama.chat(
-                model=MODEL,
+            response = chat(
                 messages=[
                     {"role": "system", "content": "You are a technical skill evaluator. Return ONLY valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
-                format="json",
-                options={"temperature": 0.3},
+                temperature=0.3,
+                json_mode=True,
             )
             raw = response["message"]["content"]
             data = _safe_json(raw)

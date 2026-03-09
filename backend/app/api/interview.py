@@ -1,6 +1,5 @@
 import json
 import re
-import ollama
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
@@ -10,9 +9,9 @@ from app.rag.prompts import (
     INTERVIEW_QUESTIONS_PROMPT,
     INTERVIEW_EVALUATE_PROMPT,
 )
+from app.llm import chat, stream_chat
 
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 
 def _safe_json(raw: str) -> dict:
@@ -32,14 +31,7 @@ def _stream_interview_chat(req: InterviewRequest):
     for m in (req.messages or []):
         messages.append({"role": m.role, "content": m.content})
 
-    stream = ollama.chat(
-        model=MODEL,
-        messages=messages,
-        stream=True,
-        options={"temperature": 0.7},
-    )
-
-    for chunk in stream:
+    for chunk in stream_chat(messages=messages, temperature=0.7):
         content = chunk.get("message", {}).get("content", "")
         if content:
             yield f"data: {json.dumps({'choices': [{'delta': {'content': content}}]})}\n\n"
@@ -58,14 +50,13 @@ async def interview_handler(req: InterviewRequest):
             type=req.interviewType or "mixed",
         )
         try:
-            response = ollama.chat(
-                model=MODEL,
+            response = chat(
                 messages=[
                     {"role": "system", "content": "You are an expert technical interviewer. Return ONLY valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
-                format="json",
-                options={"temperature": 0.5},
+                temperature=0.5,
+                json_mode=True,
             )
             raw = response["message"]["content"]
             data = _safe_json(raw)
@@ -84,14 +75,13 @@ async def interview_handler(req: InterviewRequest):
             transcript=conversation[:4000].replace("{", "{{").replace("}", "}}"),
         )
         try:
-            response = ollama.chat(
-                model=MODEL,
+            response = chat(
                 messages=[
                     {"role": "system", "content": "You are an expert interview evaluator. Return ONLY valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
-                format="json",
-                options={"temperature": 0.3},
+                temperature=0.3,
+                json_mode=True,
             )
             raw = response["message"]["content"]
             data = _safe_json(raw)

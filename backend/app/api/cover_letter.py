@@ -1,13 +1,12 @@
 import json
-import ollama
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from app.schemas.models import CoverLetterRequest
 from app.rag.prompts import COVER_LETTER_SYSTEM
+from app.llm import stream_chat
 
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 
 def _stream_cover_letter(req: CoverLetterRequest):
@@ -19,17 +18,13 @@ def _stream_cover_letter(req: CoverLetterRequest):
 {f"- Applicant Resume Summary: {req.resumeText[:1000]}" if req.resumeText else ""}
 {f"- Additional Notes: {req.additionalNotes}" if req.additionalNotes else ""}"""
 
-    stream = ollama.chat(
-        model=MODEL,
+    for chunk in stream_chat(
         messages=[
             {"role": "system", "content": COVER_LETTER_SYSTEM},
             {"role": "user", "content": user_prompt},
         ],
-        stream=True,
-        options={"temperature": 0.7},
-    )
-
-    for chunk in stream:
+        temperature=0.7,
+    ):
         content = chunk.get("message", {}).get("content", "")
         if content:
             yield f"data: {json.dumps({'choices': [{'delta': {'content': content}}]})}\n\n"

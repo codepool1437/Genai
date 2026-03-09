@@ -23,15 +23,14 @@ import time
 from typing import Optional
 
 import numpy as np
-import ollama
 from fastapi import APIRouter
+from app.llm import chat as llm_chat
 
 from app.rag.embedder import embed_one
 from app.rag.retriever import retrieve
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 # ── Default evaluation question set ─────────────────────────────────────────
 
@@ -66,16 +65,16 @@ def _cosine(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def _llm_answer(question: str, context: str) -> str:
-    """Call Ollama to generate a RAG answer."""
+    """Call Groq to generate a RAG answer."""
     system = _RAG_SYSTEM.format(context=context[:3000])
     try:
-        resp = ollama.chat(
-            model=MODEL,
+        resp = llm_chat(
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user",   "content": question},
             ],
-            options={"temperature": 0.2, "num_predict": 200},
+            temperature=0.2,
+            max_tokens=200,
         )
         return resp["message"]["content"].strip()
     except Exception as e:

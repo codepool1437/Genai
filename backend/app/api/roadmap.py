@@ -5,15 +5,14 @@ Uses RAG to pull real course recommendations, then asks Ollama for a JSON plan.
 
 import json
 import re
-import ollama
 from fastapi import APIRouter
 
 from app.schemas.models import RoadmapRequest
 from app.rag.retriever import retrieve
 from app.rag.prompts import ROADMAP_SYSTEM
+from app.llm import chat
 
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 
 def _safe_json(raw: str) -> dict:
@@ -59,14 +58,13 @@ async def generate_roadmap(req: RoadmapRequest):
     )
 
     try:
-        response = ollama.chat(
-            model=MODEL,
+        response = chat(
             messages=[
                 {"role": "system", "content": ROADMAP_SYSTEM},
                 {"role": "user",   "content": user_prompt},
             ],
-            format="json",
-            options={"temperature": 0.4},
+            temperature=0.4,
+            json_mode=True,
         )
         raw = response["message"]["content"]
         roadmap = _safe_json(raw)

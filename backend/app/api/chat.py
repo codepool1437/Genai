@@ -1,15 +1,13 @@
 import json
-import ollama
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from app.schemas.models import ChatRequest
 from app.rag.retriever import retrieve
 from app.rag.prompts import CAREER_COUNSELOR_SYSTEM
+from app.llm import stream_chat
 
 router = APIRouter()
-
-MODEL = "llama3.2:3b"
 
 
 def _build_sse(content: str) -> str:
@@ -18,16 +16,15 @@ def _build_sse(content: str) -> str:
 
 
 def _stream_response(messages: list[dict]):
-    """Stream Ollama response as OpenAI-compatible SSE."""
+    """Stream Groq response as OpenAI-compatible SSE."""
     try:
-        stream = ollama.chat(model=MODEL, messages=messages, stream=True)
-        for chunk in stream:
+        for chunk in stream_chat(messages):
             content = chunk.get("message", {}).get("content", "")
             if content:
                 yield _build_sse(content)
         yield "data: [DONE]\n\n"
     except Exception as e:
-        yield _build_sse(f"\n\n⚠️ Error: {str(e)}. Make sure Ollama is running (`ollama serve`).")
+        yield _build_sse(f"\n\n⚠️ Error: {str(e)}")
         yield "data: [DONE]\n\n"
 
 
@@ -45,17 +42,17 @@ async def chat(req: ChatRequest):
         profile_dict = req.profile.model_dump() if req.profile else None
         rag_context, rag_sources = retrieve(last_user_msg, profile=profile_dict)
 
-    # ── Build message list for Ollama ────────────────────────────────────────
+    # ── Build message list ──────────────────────────────────────────────────
     rag_block = f"\n\n{rag_context}" if rag_context else ""
     system_content = CAREER_COUNSELOR_SYSTEM + rag_block
-    ollama_messages = [{"role": "system", "content": system_content}]
+    llm_messages = [{"role": "system", "content": system_content}]
     for msg in req.messages:
-        ollama_messages.append({"role": msg.role, "content": msg.content})
+        llm_messages.append({"role": msg.role, "content": msg.content})
 
     def event_stream():
         # First send RAG sources so the frontend can show the panel
         if rag_sources:
             yield f"data: {json.dumps({'sources': rag_sources})}\n\n"
-        yield from _stream_response(ollama_messages)
+        yield from _stream_response(llm_messages)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

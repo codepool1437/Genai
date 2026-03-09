@@ -2,16 +2,15 @@ import base64
 import io
 import json
 import re
-import ollama
 from docx import Document as DocxDocument
 from fastapi import APIRouter
 from pypdf import PdfReader
 
 from app.schemas.models import ResumeRequest
 from app.rag.prompts import RESUME_ANALYSIS_SYSTEM, RESUME_EXTRACT_PROFILE_SYSTEM
+from app.llm import chat
 
 router = APIRouter()
-MODEL = "llama3.2:3b"
 
 
 def _extract_text(req: ResumeRequest) -> str:
@@ -43,14 +42,13 @@ async def extract_profile(req: ResumeRequest):
     if not resume_text.strip():
         return {"profile": None, "error": "Could not extract text."}
     try:
-        response = ollama.chat(
-            model=MODEL,
+        response = chat(
             messages=[
                 {"role": "system", "content": RESUME_EXTRACT_PROFILE_SYSTEM},
                 {"role": "user",   "content": resume_text[:5000]},
             ],
-            format="json",
-            options={"temperature": 0.1},
+            temperature=0.1,
+            json_mode=True,
         )
         profile = _safe_json(response["message"]["content"])
         return {"profile": profile}
@@ -71,14 +69,13 @@ async def analyze_resume(req: ResumeRequest):
     )
 
     try:
-        response = ollama.chat(
-            model=MODEL,
+        response = chat(
             messages=[
                 {"role": "system", "content": RESUME_ANALYSIS_SYSTEM},
                 {"role": "user", "content": user_prompt},
             ],
-            format="json",
-            options={"temperature": 0.3},
+            temperature=0.3,
+            json_mode=True,
         )
         raw = response["message"]["content"]
         analysis = _safe_json(raw)
