@@ -1,6 +1,6 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import React from "react";
 
 interface Props  { children: React.ReactNode; fallback?: React.ReactNode }
 interface State  { hasError: boolean; error?: Error }

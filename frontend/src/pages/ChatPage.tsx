@@ -2,12 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
+import { apiGet } from "@/lib/api";
 import { ArrowLeft, BookOpen, Bot, ChevronDown, Loader2, Send, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { apiGet } from "@/lib/api";
 import type { UserProfile } from "./ProfileSetup";
 
 type RagSource = { file_name: string; score: number; content_preview: string };
