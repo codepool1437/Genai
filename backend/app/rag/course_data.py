@@ -1,4 +1,4 @@
-"""
+no """
 Course seed data — 100+ real courses across 25 skill areas.
 Each course has a rich `text` field that gets embedded so semantic search works well.
 """
@@ -560,3 +560,37 @@ COURSES: list[dict] = [
      "url": "https://www.levels.fyi/",
      "text": "Salary negotiation for tech professionals: researching market rates, counter-offer strategies, total compensation (base, equity, bonus), and negotiating remote work and benefits."},
 ]
+
+# ── Industry mapping — applied to all courses at import time ─────────────────
+# Maps skill area → one or more industries this skill is relevant to.
+SKILL_INDUSTRY_MAP: dict[str, str] = {
+    "Python":                       "Tech",
+    "Machine Learning":             "Tech / Data Science",
+    "Deep Learning":                "Tech / Data Science",
+    "Data Analysis":                "Tech / Finance / Healthcare",
+    "Statistics":                   "Tech / Academia / Finance",
+    "SQL":                          "Tech / Finance / Healthcare",
+    "Web Development":              "Tech",
+    "Cloud Computing":              "Tech",
+    "DevOps":                       "Tech",
+    "Data Structures & Algorithms": "Tech",
+    "NLP / GenAI":                  "Tech / AI Research",
+    "Computer Vision":              "Tech / Healthcare / Automotive",
+    "Mobile Development":           "Tech",
+    "Cybersecurity":                "Tech / Finance / Government",
+    "Blockchain":                   "Tech / Finance",
+    "System Design":                "Tech",
+    "Software Engineering":         "Tech",
+    "Data Engineering":             "Tech / Finance",
+    "Mathematics for ML":           "Tech / Academia",
+    "Product Management":           "Tech / Business",
+    "UI/UX Design":                 "Tech / Design / Media",
+    "MLOps":                        "Tech / Data Science",
+    "R Programming":                "Tech / Healthcare / Academia",
+    "TypeScript":                   "Tech",
+    "Career Skills":                "Cross-Industry",
+}
+
+# Stamp every course dict with its industry at import time
+for _c in COURSES:
+    _c["industry"] = SKILL_INDUSTRY_MAP.get(_c["skill"], "Tech")

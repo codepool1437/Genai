@@ -48,8 +48,17 @@ const ChatPage = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (profile && messages.length === 0) {
-      const initialMsg = `Hi! I'm ${profile.name}. Here's my profile:\n\n**Current Role:** ${profile.currentRole || "N/A"}\n**Education:** ${profile.education || "N/A"}\n**Skills:** ${profile.skills || "N/A"}\n**Experience:** ${profile.experience || "N/A"}\n**Career Goals:** ${profile.goals}\n**Industries:** ${profile.industries || "N/A"}\n\nPlease provide a comprehensive career guidance analysis based on my profile.`;
+    // Only auto-greet if the profile is meaningfully filled (name + goals are required fields)
+    if (profile && profile.name && profile.goals && messages.length === 0) {
+      const parts: string[] = [];
+      if (profile.currentRole) parts.push(`Current Role: ${profile.currentRole}`);
+      if (profile.education)   parts.push(`Education: ${profile.education}`);
+      if (profile.skills)      parts.push(`Skills: ${profile.skills}`);
+      if (profile.experience)  parts.push(`Experience: ${profile.experience}`);
+      if (profile.goals)       parts.push(`Career Goals: ${profile.goals}`);
+      if (profile.industries)  parts.push(`Industries: ${profile.industries}`);
+      if ((profile as any).bio) parts.push(`About me: ${(profile as any).bio}`);
+      const initialMsg = `Hi! I'm ${profile.name}. Here's my profile:\n\n${parts.join("\n")}\n\nPlease provide a comprehensive career guidance analysis based on my profile.`;
       sendMessage(initialMsg);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

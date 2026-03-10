@@ -14,11 +14,47 @@ _DOC_TOP_K        = 4
 _COURSE_MIN_SCORE = 0.20  # only suggest courses with meaningful relevance
 _DOC_MIN_SCORE    = 0.0   # always include user docs — they were uploaded for context
 
+# Maps broad role keywords → allowed skill tags in course metadata.
+# Used by retrieve() when target_role is provided to filter out off-domain courses.
+_ROLE_DOMAIN_MAP: dict[str, list[str]] = {
+    "frontend":        ["Web Development", "TypeScript", "UI/UX Design", "Software Engineering", "Career Skills"],
+    "backend":         ["Web Development", "Software Engineering", "SQL", "DevOps", "Cloud Computing", "Python", "Career Skills"],
+    "full stack":      ["Web Development", "TypeScript", "Software Engineering", "SQL", "DevOps", "Cloud Computing", "Python", "Career Skills"],
+    "fullstack":       ["Web Development", "TypeScript", "Software Engineering", "SQL", "DevOps", "Cloud Computing", "Python", "Career Skills"],
+    "data scientist":  ["Machine Learning", "Deep Learning", "Data Analysis", "Statistics", "SQL", "Python", "NLP / GenAI", "Mathematics for ML", "MLOps", "Career Skills"],
+    "data analyst":    ["Data Analysis", "SQL", "Statistics", "Python", "R Programming", "Career Skills"],
+    "data engineer":   ["Data Engineering", "SQL", "Cloud Computing", "DevOps", "Python", "Software Engineering", "Career Skills"],
+    "ml engineer":     ["Machine Learning", "Deep Learning", "MLOps", "Python", "Cloud Computing", "Mathematics for ML", "Career Skills"],
+    "ai engineer":     ["Machine Learning", "Deep Learning", "NLP / GenAI", "MLOps", "Python", "Cloud Computing", "Career Skills"],
+    "devops":          ["DevOps", "Cloud Computing", "Software Engineering", "System Design", "Career Skills"],
+    "cloud":           ["Cloud Computing", "DevOps", "System Design", "Software Engineering", "Career Skills"],
+    "mobile":          ["Mobile Development", "Software Engineering", "Career Skills"],
+    "android":         ["Mobile Development", "Software Engineering", "Career Skills"],
+    "ios":             ["Mobile Development", "Software Engineering", "Career Skills"],
+    "cybersecurity":   ["Cybersecurity", "Software Engineering", "Career Skills"],
+    "product manager": ["Product Management", "Career Skills", "UI/UX Design"],
+    "ux":              ["UI/UX Design", "Career Skills"],
+    "ui":              ["UI/UX Design", "Career Skills"],
+    "blockchain":      ["Blockchain", "Software Engineering", "Career Skills"],
+    "software engineer": ["Software Engineering", "Data Structures & Algorithms", "System Design", "Web Development", "Cloud Computing", "DevOps", "Career Skills"],
+    "computer vision": ["Computer Vision", "Deep Learning", "Machine Learning", "Python", "Career Skills"],
+}
+
+
+def _allowed_skills_for_role(target_role: str) -> list[str] | None:
+    """Return the allowed skill tags for a given role, or None if no mapping found (meaning: allow all)."""
+    role_lower = target_role.lower()
+    for keyword, skills in _ROLE_DOMAIN_MAP.items():
+        if keyword in role_lower:
+            return skills
+    return None
+
 
 def retrieve(
     query: str,
     *,
     profile: dict | None = None,
+    target_role: str | None = None,
     top_k_courses: int = _COURSE_TOP_K,
     top_k_docs: int = _DOC_TOP_K,
 ) -> tuple[str, list[dict]]:
@@ -29,6 +65,8 @@ def retrieve(
 
     The `profile` dict (optional) is used to enrich the query with the
     user's current role/skills so the embedding is more targeted.
+    The `target_role` (optional) filters retrieved courses to only those
+    relevant to the role's domain, preventing off-domain suggestions.
     """
     enriched_query = _enrich_query(query, profile)
     store = get_store()
@@ -42,12 +80,24 @@ def retrieve(
         "user_docs", top_k=top_k_docs, min_score=_DOC_MIN_SCORE
     )
 
-    # similarity_search_with_relevance_scores is the mechanism VectorStoreRetriever
-    # uses internally — we call it here to also retrieve the relevance scores for display.
-    # store.search() already guards against missing collections (returns []).
-    course_hits = store.search(
-        "courses", enriched_query, top_k=top_k_courses, min_score=_COURSE_MIN_SCORE
+    # Fetch more candidates when role-filtering so we still get top_k after filtering
+    fetch_k = top_k_courses * 3 if target_role else top_k_courses
+    course_hits_raw = store.search(
+        "courses", enriched_query, top_k=fetch_k, min_score=_COURSE_MIN_SCORE
     )
+
+    # Option B: post-filter by role domain if target_role is provided
+    allowed = _allowed_skills_for_role(target_role) if target_role else None
+    if allowed:
+        course_hits = [h for h in course_hits_raw if h.get("skill") in allowed][:top_k_courses]
+        if not course_hits:  # fallback: no filter if nothing passes (very niche role)
+            course_hits = course_hits_raw[:top_k_courses]
+            logger.debug("role-domain filter found no matches for '%s' — using unfiltered results", target_role)
+        else:
+            logger.debug("role-domain filter: %d/%d courses kept for role '%s'", len(course_hits), len(course_hits_raw), target_role)
+    else:
+        course_hits = course_hits_raw[:top_k_courses]
+
     doc_hits = store.search(
         "user_docs", enriched_query, top_k=top_k_docs, min_score=_DOC_MIN_SCORE
     )

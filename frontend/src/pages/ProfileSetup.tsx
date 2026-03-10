@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiGet, apiPost } from "@/lib/api";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, FileUp, Loader2, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ export interface UserProfile {
   experience: string;
   goals: string;
   industries: string;
+  bio: string;
 }
 
 const emptyProfile: UserProfile = {
@@ -26,6 +27,7 @@ const emptyProfile: UserProfile = {
   experience: "",
   goals: "",
   industries: "",
+  bio: "",
 };
 
 const ProfileSetup = () => {
@@ -37,6 +39,35 @@ const ProfileSetup = () => {
     } catch { return emptyProfile; }
   });
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+      const resp = await fetch(`${API_BASE}/api/profile/extract`, { method: "POST", body: formData });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ detail: "Extraction failed" }));
+        throw new Error(err.detail || "Extraction failed");
+      }
+      const extracted = await resp.json();
+      setProfile((prev) => ({
+        ...prev,
+        ...Object.fromEntries(Object.entries(extracted).filter(([, v]) => v)),
+      }));
+      toast.success("CV parsed! Review the fields below and edit if needed.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Could not parse CV. Please fill manually.");
+    } finally {
+      setExtracting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Hydrate from server on first load (overwrites localStorage if server has newer data)
   useEffect(() => {
@@ -97,6 +128,35 @@ const ProfileSetup = () => {
         </div>
 
         <div className="space-y-6 bg-card rounded-xl p-6 sm:p-8 border border-border shadow-sm">
+
+          {/* ── CV auto-fill ────────────────────────────────────────── */}
+          <div className="rounded-lg border border-dashed border-border bg-muted/40 p-4 flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-foreground">Auto-fill from your CV / Resume</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Upload a PDF, DOCX, or TXT — our AI will extract your details and fill the form instantly.</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.txt,.md"
+              className="hidden"
+              onChange={handleCVUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={extracting}
+              onClick={() => fileInputRef.current?.click()}
+              className="shrink-0"
+            >
+              {extracting
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Parsing CV…</>
+                : <><FileUp className="w-4 h-4 mr-2" />Upload CV</>}
+            </Button>
+          </div>
+
+          {/* ── form fields ─────────────────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
@@ -169,6 +229,18 @@ const ProfileSetup = () => {
               value={profile.industries}
               onChange={(e) => handleChange("industries", e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Tell us about yourself (optional)</Label>
+            <Textarea
+              id="bio"
+              placeholder="Describe your background in your own words — e.g. 'I'm a 3rd year CS student who knows some Python and wants to break into AI. I've built a few small projects but never worked professionally...'"
+              value={profile.bio}
+              onChange={(e) => handleChange("bio", e.target.value)}
+              rows={4}
+            />
+            <p className="text-xs text-muted-foreground">Our AI reads this directly to understand your background and tailor your roadmap.</p>
           </div>
 
           <Button

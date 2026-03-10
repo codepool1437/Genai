@@ -1,9 +1,10 @@
 {
-  "name": null,
-  "currentRole": null,
-  "education": null,
-  "skills": null,
-  "experience": null,
-  "goals": null,
-  "industries": null
+  "name": "Jaydip Chavan",
+  "currentRole": "Third-year Computer Engineering student",
+  "education": "Bachelor of Technology in Computer Engineering, Vishwakarma Institute of Information Technology, Pune",
+  "skills": "Java, Python, JavaScript, TypeScript, React.js, Node.js, Tailwind CSS, HTML, CSS, Express.js, Git, GitHub, VS Code, MongoDB, npm, Data Structures and Algorithms, Responsive UI Design, Basic SQL, Linux/CLI",
+  "experience": "Developed a frontend web application simulating an agricultural product marketplace, a web-based platform for school website enrollment, and clones of Spotify and Netflix homepages.",
+  "goals": "Apply problem-solving skills and grow in a dynamic startup environment, contributing meaningfully to innovative products.",
+  "industries": "Computer Engineering, AI/ML, Web Development, Frontend Development",
+  "bio": ""
 }

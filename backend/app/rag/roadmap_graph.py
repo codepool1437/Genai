@@ -89,8 +89,11 @@ Given a candidate profile analysis and their target role, return ONLY valid JSON
 }
 
 Rules:
-- skill_gaps: 5-10 specific, actionable technical and soft skills (not vague like "communication")
-- rag_query: combine target role + 3-4 most important missing skills into a natural sentence
+- skill_gaps: 5-10 specific, actionable technical and soft skills DIRECTLY required for the target role.
+  Do NOT include skills from unrelated domains (e.g. do not suggest ML/AI for a Frontend role,
+  do not suggest frontend for a Data Engineer role). Stick strictly to what the role demands.
+- rag_query: combine target role + 3-4 most important ROLE-SPECIFIC missing skills into a natural sentence.
+  The query must stay within the domain of the target role.
 - Return ONLY the JSON — no markdown, no extra text"""
 
 _CAREER_PATH_SYSTEM = """You are a career strategist. Given a candidate's profile, skill gaps, and target role, briefly
@@ -113,6 +116,7 @@ def _profile_text(profile: dict) -> str:
         ("experience",  "Experience"),
         ("goals",       "Career goal"),
         ("industries",  "Target industries"),
+        ("bio",         "Self-description (free text)"),
     ]
     for key, label in mapping:
         val = profile.get(key, "")
@@ -237,10 +241,12 @@ def career_path_recommender_node(state: RoadmapState) -> dict:
     logger.info("[Node 3] career_path_recommender — rag_query=%r", state["rag_query"][:60])
 
     # Step A: RAG retrieval — the core FAISS VectorStoreRetriever call
+    # Pass target_role so retriever can filter courses to the role's domain (Option B)
     try:
         rag_context, _ = retrieve(
             state["rag_query"],
             profile=state["profile"],
+            target_role=state["target_role"],
             top_k_courses=12,
             top_k_docs=2,
         )

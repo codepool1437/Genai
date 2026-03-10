@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BarChart3, BookOpen, Brain, Briefcase, FileText, Map, Mic, Sparkles, Target, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, BookOpen, Map, Sparkles, Target, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const features = [
@@ -99,51 +99,6 @@ const Index = () => {
             >
               <BookOpen className="w-4 h-4 mr-2" />
               Knowledge Base
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
-              onClick={() => navigate("/resume-analyzer")}
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Resume Analyzer
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
-              onClick={() => navigate("/cover-letter")}
-            >
-              <Briefcase className="w-4 h-4 mr-2" />
-              Cover Letter
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
-              onClick={() => navigate("/skill-quiz")}
-            >
-              <Brain className="w-4 h-4 mr-2" />
-              Skill Quiz
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
-              onClick={() => navigate("/mock-interview")}
-            >
-              <Mic className="w-4 h-4 mr-2" />
-              Mock Interview
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
-              onClick={() => navigate("/eval")}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              RAG Eval
             </Button>
           </div>
         </div>
