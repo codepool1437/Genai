@@ -2,7 +2,7 @@
 Document ingestor — handles PDF, DOCX, TXT, MD files.
 
 Pipeline:
-  raw bytes → text extraction → chunking (500 chars, 100 overlap) → embed → store
+  raw bytes → text extraction → LangChain RecursiveCharacterTextSplitter → embed → store
 """
 
 from __future__ import annotations
@@ -12,6 +12,8 @@ import logging
 import uuid
 from pathlib import Path
 
+from langchain_text_splitters.character import RecursiveCharacterTextSplitter
+
 from app.rag.embedder import embed
 from app.rag.vector_store import get_store
 
@@ -19,6 +21,14 @@ logger = logging.getLogger(__name__)
 
 CHUNK_SIZE = 500      # characters
 CHUNK_OVERLAP = 100   # characters
+
+# LangChain splitter — splits on paragraphs, sentences, words, chars (in that order)
+_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=CHUNK_SIZE,
+    chunk_overlap=CHUNK_OVERLAP,
+    length_function=len,
+    separators=["\n\n", "\n", ". ", " ", ""],
+)
 
 
 # ── Text extraction ──────────────────────────────────────────────────────────
@@ -42,18 +52,12 @@ def _extract_text_from_bytes(filename: str, raw: bytes) -> str:
 
 # ── Chunking ─────────────────────────────────────────────────────────────────
 
-def _chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> list[str]:
-    """Split text into overlapping character-level chunks."""
+def _chunk_text(text: str) -> list[str]:
+    """Split text using LangChain RecursiveCharacterTextSplitter."""
     text = text.strip()
     if not text:
         return []
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + size
-        chunks.append(text[start:end])
-        start += size - overlap
-    return chunks
+    return _splitter.split_text(text)
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
@@ -73,7 +77,7 @@ def ingest_file(
         doc_id = str(uuid.uuid4())
 
     text = _extract_text_from_bytes(filename, raw_bytes)
-    chunks = _chunk_text(text)
+    chunks = _chunk_text(text)  # uses RecursiveCharacterTextSplitter
 
     if not chunks:
         logger.warning("No text extracted from '%s'", filename)
@@ -120,21 +124,5 @@ def ingest_file(
 def remove_file(doc_id: str, collection: str = "user_docs"):
     """Remove all chunks belonging to doc_id from the vector store."""
     store = get_store()
-    # chunks stored as {parent_id: doc_id} — delete by parent_id
-    data = store._data.get(collection)
-    if not data:
-        return
-    keep = [
-        i for i, d in enumerate(data["docs"])
-        if d.get("parent_id") != doc_id and d.get("id") != doc_id
-    ]
-    if len(keep) == len(data["docs"]):
-        return
-    import numpy as np
-    with store._lock:
-        store._data[collection] = {
-            "embeddings": data["embeddings"][keep],
-            "docs": [data["docs"][i] for i in keep],
-        }
-        store._save(collection)
-    logger.info("Removed %d chunks for doc '%s'", len(data["docs"]) - len(keep), doc_id)
+    store.delete_by_id(collection, doc_id)
+    logger.info("Removed chunks for doc '%s' from collection '%s'", doc_id, collection)

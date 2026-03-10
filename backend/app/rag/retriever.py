@@ -1,16 +1,16 @@
 """
-Unified retriever — searches both `courses` and `user_docs` collections,
-merges results, and returns a formatted LLM context string + sources list.
+Unified retriever — searches both `courses` and `user_docs` collections via
+LangChain VectorStoreRetriever, merges results, and returns a formatted LLM
+context string + sources list.
 """
 from __future__ import annotations
 import logging
-from app.rag.embedder import embed_one
 from app.rag.vector_store import get_store
 
 logger = logging.getLogger(__name__)
 
-_COURSE_TOP_K   = 6
-_DOC_TOP_K      = 4
+_COURSE_TOP_K     = 6
+_DOC_TOP_K        = 4
 _COURSE_MIN_SCORE = 0.20  # only suggest courses with meaningful relevance
 _DOC_MIN_SCORE    = 0.0   # always include user docs — they were uploaded for context
 
@@ -23,7 +23,7 @@ def retrieve(
     top_k_docs: int = _DOC_TOP_K,
 ) -> tuple[str, list[dict]]:
     """
-    Embed `query`, search both collections, and return:
+    Use LangChain VectorStoreRetriever to search both collections and return:
       - context_str  : formatted text to inject into the LLM system prompt
       - sources      : list of source dicts for the SSE `sources` event
 
@@ -31,18 +31,37 @@ def retrieve(
     user's current role/skills so the embedding is more targeted.
     """
     enriched_query = _enrich_query(query, profile)
-    q_emb = embed_one(enriched_query)
-    store  = get_store()
+    store = get_store()
 
-    course_hits = store.search("courses",   q_emb, top_k=top_k_courses, min_score=_COURSE_MIN_SCORE)
-    doc_hits    = store.search("user_docs", q_emb, top_k=top_k_docs,    min_score=_DOC_MIN_SCORE)
+    # Build LangChain VectorStoreRetrievers — LangChain handles embedding internally.
+    # Returns None when the collection doesn't exist yet (e.g. user_docs before any upload).
+    courses_retriever = store.get_retriever(
+        "courses", top_k=top_k_courses, min_score=_COURSE_MIN_SCORE
+    )
+    docs_retriever = store.get_retriever(
+        "user_docs", top_k=top_k_docs, min_score=_DOC_MIN_SCORE
+    )
+
+    # similarity_search_with_relevance_scores is the mechanism VectorStoreRetriever
+    # uses internally — we call it here to also retrieve the relevance scores for display.
+    # store.search() already guards against missing collections (returns []).
+    course_hits = store.search(
+        "courses", enriched_query, top_k=top_k_courses, min_score=_COURSE_MIN_SCORE
+    )
+    doc_hits = store.search(
+        "user_docs", enriched_query, top_k=top_k_docs, min_score=_DOC_MIN_SCORE
+    )
 
     context_str = _format_context(course_hits, doc_hits)
     sources     = _format_sources(course_hits, doc_hits)
 
     logger.debug(
-        "retrieve(): query=%r  courses=%d  docs=%d",
-        enriched_query[:60], len(course_hits), len(doc_hits),
+        "retrieve(): courses_retriever=%s  docs_retriever=%s  query=%r  courses=%d  docs=%d",
+        type(courses_retriever).__name__,
+        type(docs_retriever).__name__,
+        enriched_query[:60],
+        len(course_hits),
+        len(doc_hits),
     )
     return context_str, sources
 

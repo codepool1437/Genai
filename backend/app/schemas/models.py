@@ -22,6 +22,7 @@ class UserProfile(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
     profile: Optional[UserProfile] = None
+    session_id: Optional[str] = None  # client-supplied; auto-ignored if absent
 
 
 class RoadmapRequest(BaseModel):

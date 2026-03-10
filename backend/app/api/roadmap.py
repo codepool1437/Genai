@@ -1,78 +1,53 @@
 """
-POST /api/roadmap — Generate a structured career roadmap for a given user profile.
-Uses RAG to pull real course recommendations, then asks Ollama for a JSON plan.
+POST /api/roadmap — Generate a structured career roadmap via the LangGraph pipeline.
+
+LangGraph StateGraph (4 nodes, sequential):
+  profile_analyzer → skill_gap_identifier → career_path_recommender → resource_suggester
+
+Each node does one focused task and passes enriched state to the next.
 """
 
-import json
-import re
+import asyncio
 from fastapi import APIRouter
 
 from app.schemas.models import RoadmapRequest
-from app.rag.retriever import retrieve
-from app.rag.prompts import ROADMAP_SYSTEM
-from app.llm import chat
+from app.rag.roadmap_graph import roadmap_graph, RoadmapState
 
 router = APIRouter()
 
 
-def _safe_json(raw: str) -> dict:
-    """Extract the first JSON object from LLM output even if wrapped in markdown."""
-    match = re.search(r"\{[\s\S]*\}", raw)
-    if match:
-        return json.loads(match.group())
-    raise ValueError("No JSON object in LLM response")
-
-
-def _profile_summary(profile) -> str:
-    parts = []
-    if profile.name:
-        parts.append(f"Name: {profile.name}")
-    if profile.currentRole:
-        parts.append(f"Current role: {profile.currentRole}")
-    if profile.education:
-        parts.append(f"Education: {profile.education}")
-    if profile.skills:
-        parts.append(f"Current skills: {profile.skills}")
-    if profile.experience:
-        parts.append(f"Experience: {profile.experience}")
-    if profile.goals:
-        parts.append(f"Career goal: {profile.goals}")
-    if profile.industries:
-        parts.append(f"Target industries: {profile.industries}")
-    return "\n".join(parts) if parts else "No profile provided"
-
-
 @router.post("/roadmap")
 async def generate_roadmap(req: RoadmapRequest):
-    profile = req.profile
-    query = f"{profile.goals or 'career guidance'} {profile.currentRole or ''} roadmap courses"
+    profile_dict = req.profile.model_dump()
 
-    # RAG: pull relevant courses as context
-    rag_context, _ = retrieve(query, profile=profile.model_dump(), top_k_courses=12, top_k_docs=2)
+    # Initial state — only profile is populated; all other fields are empty
+    initial_state: RoadmapState = {
+        "profile":          profile_dict,
+        "profile_analysis": "",
+        "current_level":    "",
+        "target_role":      "",
+        "skill_gaps":       [],
+        "rag_query":        "",
+        "rag_context":      "",
+        "career_paths":     "",
+        "roadmap":          {},
+        "error":            "",
+    }
 
-    user_prompt = (
-        f"Generate a personalized career roadmap for this person:\n\n"
-        f"{_profile_summary(profile)}\n\n"
-        f"Use ONLY these verified courses for your recommendations:\n\n"
-        f"{rag_context}"
-    )
-
+    # Run the graph in a thread pool so FastAPI's event loop is not blocked
+    loop = asyncio.get_event_loop()
     try:
-        response = chat(
-            messages=[
-                {"role": "system", "content": ROADMAP_SYSTEM},
-                {"role": "user",   "content": user_prompt},
-            ],
-            temperature=0.4,
-            json_mode=True,
+        final_state: RoadmapState = await loop.run_in_executor(
+            None, roadmap_graph.invoke, initial_state
         )
-        raw = response["message"]["content"]
-        roadmap = _safe_json(raw)
-        return {"roadmap": roadmap}
+    except Exception as exc:
+        return {"roadmap": None, "error": str(exc)}
 
-    except Exception as e:
-        # Graceful fallback — return a minimal valid roadmap
-        return {
-            "roadmap": None,
-            "error": str(e),
-        }
+    return {
+        "roadmap":       final_state.get("roadmap") or None,
+        "current_level": final_state.get("current_level"),
+        "target_role":   final_state.get("target_role"),
+        "skill_gaps":    final_state.get("skill_gaps", []),
+        "career_paths":  final_state.get("career_paths"),
+        "error":         final_state.get("error") or None,
+    }

@@ -77,7 +77,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/roadmap")}
             >
               <Map className="w-4 h-4 mr-2" />
@@ -86,7 +86,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/chat")}
             >
               Try Quick Chat
@@ -94,7 +94,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/knowledge-base")}
             >
               <BookOpen className="w-4 h-4 mr-2" />
@@ -103,7 +103,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/resume-analyzer")}
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -112,7 +112,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/cover-letter")}
             >
               <Briefcase className="w-4 h-4 mr-2" />
@@ -121,7 +121,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/skill-quiz")}
             >
               <Brain className="w-4 h-4 mr-2" />
@@ -130,7 +130,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/mock-interview")}
             >
               <Mic className="w-4 h-4 mr-2" />
@@ -139,7 +139,7 @@ const Index = () => {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 font-display px-8 text-base"
+              className="border-teal text-teal-foreground bg-teal/20 hover:bg-teal/30 font-display px-8 text-base"
               onClick={() => navigate("/eval")}
             >
               <BarChart3 className="w-4 h-4 mr-2" />

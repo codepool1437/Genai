@@ -21,6 +21,8 @@ const ChatPage = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Persists the server-issued session ID across renders so memory works across turns
+  const sessionIdRef = useRef<string | null>(null);
 
   const [profile, setProfile] = useState<UserProfile | null>(() => {
     try {
@@ -67,7 +69,7 @@ const ChatPage = () => {
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: allMessages, profile: profile || undefined }),
+        body: JSON.stringify({ messages: allMessages, profile: profile || undefined, session_id: sessionIdRef.current ?? undefined }),
       });
 
       if (!resp.ok) {
@@ -106,9 +108,10 @@ const ChatPage = () => {
           try {
             const parsed = JSON.parse(jsonStr);
 
-            // Check for RAG sources event
-            if (parsed.sources) {
-              ragSources = parsed.sources;
+            // Check for metadata frame (first SSE frame: session_id + optional sources)
+            if (parsed.session_id !== undefined || parsed.sources !== undefined) {
+              if (parsed.session_id) sessionIdRef.current = parsed.session_id;
+              if (parsed.sources) ragSources = parsed.sources;
               continue;
             }
 
@@ -145,7 +148,11 @@ const ChatPage = () => {
           if (jsonStr === "[DONE]") continue;
           try {
             const parsed = JSON.parse(jsonStr);
-            if (parsed.sources) { ragSources = parsed.sources; continue; }
+            if (parsed.session_id !== undefined || parsed.sources !== undefined) {
+            if (parsed.session_id) sessionIdRef.current = parsed.session_id;
+            if (parsed.sources) ragSources = parsed.sources;
+            continue;
+          }
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantSoFar += content;
