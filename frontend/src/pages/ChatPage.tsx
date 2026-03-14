@@ -62,116 +62,26 @@ const ChatPage = () => {
     setInput("");
     setIsLoading(true);
 
-    let assistantSoFar = "";
-    let ragSources: RagSource[] = [];
-    const allMessages = [...messages, userMsg].map(({ role, content }) => ({ role, content }));
-
     try {
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: allMessages, profile: profile || undefined, session_id: sessionIdRef.current ?? undefined }),
+        body: JSON.stringify({ 
+          message: text, 
+          // We fetch session_id from memory or refs
+          session_id: localStorage.getItem("career-session-id") || sessionIdRef.current || "" 
+        }),
       });
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: "Request failed" }));
-        if (resp.status === 429) toast.error("Rate limit exceeded. Please wait a moment.");
-        else if (resp.status === 402) toast.error("Usage limit reached. Please add credits.");
-        else toast.error(err.error || "Something went wrong");
+        toast.error(err.detail || "Something went wrong");
         setIsLoading(false);
         return;
       }
 
-      if (!resp.body) throw new Error("No response body");
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = "";
-      let streamDone = false;
-
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") { streamDone = true; break; }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-
-            // Check for metadata frame (first SSE frame: session_id + optional sources)
-            if (parsed.session_id !== undefined || parsed.sources !== undefined) {
-              if (parsed.session_id) sessionIdRef.current = parsed.session_id;
-              if (parsed.sources) ragSources = parsed.sources;
-              continue;
-            }
-
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantSoFar += content;
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant") {
-                  return prev.map((m, i) =>
-                    i === prev.length - 1
-                      ? { ...m, content: assistantSoFar, sources: ragSources.length > 0 ? ragSources : undefined }
-                      : m
-                  );
-                }
-                return [...prev, { role: "assistant", content: assistantSoFar, sources: ragSources.length > 0 ? ragSources : undefined }];
-              });
-            }
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
-          }
-        }
-      }
-
-      // Final flush
-      if (textBuffer.trim()) {
-        for (let raw of textBuffer.split("\n")) {
-          if (!raw) continue;
-          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-          if (raw.startsWith(":") || raw.trim() === "") continue;
-          if (!raw.startsWith("data: ")) continue;
-          const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.session_id !== undefined || parsed.sources !== undefined) {
-            if (parsed.session_id) sessionIdRef.current = parsed.session_id;
-            if (parsed.sources) ragSources = parsed.sources;
-            continue;
-          }
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantSoFar += content;
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant") {
-                  return prev.map((m, i) =>
-                    i === prev.length - 1
-                      ? { ...m, content: assistantSoFar, sources: ragSources.length > 0 ? ragSources : undefined }
-                      : m
-                  );
-                }
-                return [...prev, { role: "assistant", content: assistantSoFar, sources: ragSources.length > 0 ? ragSources : undefined }];
-              });
-            }
-          } catch { /* ignore */ }
-        }
-      }
+      const data = await resp.json();
+      setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
     } catch (e) {
       console.error(e);
       toast.error("Failed to connect to AI. Please try again.");
@@ -246,7 +156,7 @@ const ChatPage = () => {
                   <button
                     key={q}
                     className="text-left px-4 py-3 rounded-lg border border-border bg-card text-sm text-foreground hover:bg-muted transition-colors"
-                    onClick={() => sendMessage(q)}
+                    onClick={() => setInput(q)}
                   >
                     {q}
                   </button>

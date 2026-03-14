@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Map, Sparkles, Target, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, BookOpen, Map, MessageSquare, Sparkles, Target, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const features = [
@@ -82,6 +82,15 @@ const Index = () => {
             >
               <Map className="w-4 h-4 mr-2" />
               Career Roadmap
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-amber-500/50 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 font-display px-8 text-base"
+              onClick={() => navigate("/chat")}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              AI Advisor
             </Button>
           </div>
         </div>

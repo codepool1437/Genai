@@ -11,6 +11,16 @@ class ParsedProfile(BaseModel):
     current_skills: List[str] = Field(description="A list of skills the user currently possesses.")
     career_goal: str = Field(description="The specific job role or career goal the user wants to achieve.")
 
+class ParsedCVInfo(BaseModel):
+    """Output schema for extracting structured data from a user's uploaded CV/Resume."""
+    name: str = Field(description="Full name of the candidate. Leave empty if missing.", default="")
+    current_role: str = Field(description="Their current, most recent, or target job title. Leave empty if missing.", default="")
+    education: str = Field(description="Summary of their highest educational degree and institution. Leave empty if missing.", default="")
+    skills: str = Field(description="Comma-separated list of technical and soft skills. Leave empty if missing.", default="")
+    experience: str = Field(description="A short 1-2 sentence summary of their work experience/achievements. Leave empty if missing.", default="")
+    goals: str = Field(description="Their likely career goals based on the CV. Leave empty if missing.", default="")
+    industries: str = Field(description="Industries they have worked in or are targeting. Leave empty if missing.", default="")
+
 class SkillGaps(BaseModel):
     """Output schema for the Skill Gap Identifier Agent."""
     required_skills: List[str] = Field(description="A list of standard skills generally required for the user's career goal.")

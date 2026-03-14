@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { analyzeProfile } from "@/lib/api";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { analyzeProfile, extractCV } from "@/lib/api";
+import { ArrowRight, Loader2, Sparkles, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -32,6 +32,7 @@ const emptyProfile: UserProfile = {
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem("career-profile");
@@ -39,12 +40,64 @@ const ProfileSetup = () => {
     } catch { return emptyProfile; }
   });
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
 
   // Remove server hydration since we're using one-shot pipeline
   useEffect(() => {
     // Just ensure the window scrolls to top
     window.scrollTo(0, 0);
   }, []);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a purely PDF file.");
+      return;
+    }
+
+    setExtracting(true);
+    toast.info("Extracting data from CV...");
+
+    try {
+      const response = await extractCV(file);
+      
+      const { 
+        name, 
+        current_role, 
+        education, 
+        skills, 
+        experience, 
+        goals, 
+        industries 
+      } = response.extracted_data;
+
+      // Update the React state gracefully, prefer extracted values if they exist,
+      // without completely wiping what the user might have already typed unless it was empty.
+      setProfile((prev) => ({
+        ...prev,
+        name: name || prev.name,
+        currentRole: current_role || prev.currentRole,
+        education: education || prev.education,
+        skills: skills || prev.skills,
+        experience: experience || prev.experience,
+        goals: goals || prev.goals,
+        industries: industries || prev.industries,
+        bio: prev.bio // Leave Bio untouched since we mapped the actual fields
+      }));
+
+      toast.success("CV Extracted! The fields have been auto-filled appropriately.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to extract CV.");
+    } finally {
+      setExtracting(false);
+      // Reset input so they can upload again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const handleChange = (field: keyof UserProfile, value: string) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
@@ -111,6 +164,39 @@ const ProfileSetup = () => {
         </div>
 
         <div className="space-y-6 bg-card rounded-xl p-6 sm:p-8 border border-border shadow-sm">
+
+          {/* ── Auto-fill CV Upload ─────────────────────────────────── */}
+          <div className="bg-primary/5 rounded-lg p-5 border border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-medium text-foreground mb-1">
+                Have a resume?
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Upload your CV and we'll extract the details for you. (PDF only)
+              </p>
+            </div>
+            <input 
+              type="file" 
+              accept=".pdf" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              disabled={extracting}
+            />
+            <Button 
+              variant="outline" 
+              className="shrink-0" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={extracting}
+            >
+              {extracting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4 mr-2" />
+              )}
+              {extracting ? "Extracting..." : "Upload CV"}
+            </Button>
+          </div>
 
           {/* ── form fields ─────────────────────────────────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

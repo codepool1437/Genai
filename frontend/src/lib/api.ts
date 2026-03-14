@@ -50,6 +50,19 @@ export interface AnalyzeProfileResponse {
   report: FinalReport;
 }
 
+export interface ExtractCVResponse {
+  status: string;
+  extracted_data: {
+    name: string;
+    current_role: string;
+    education: string;
+    skills: string;
+    experience: string;
+    goals: string;
+    industries: string;
+  };
+}
+
 // ---------------------------------------------------------
 // API Call Functions
 // ---------------------------------------------------------
@@ -109,6 +122,64 @@ export async function getProgress(sessionId: string): Promise<AnalyzeProfileResp
     throw error;
   }
 }
+
+/**
+ * Uploads a CV (PDF) to the backend to extract text.
+ * @param file The PDF file to upload.
+ * @returns The extracted text.
+ */
+export async function extractCV(file: File): Promise<ExtractCVResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile/extract`, {
+      method: "POST",
+      // Note: When using FormData, do NOT set Content-Type header. 
+      // The browser will automatically set it to multipart/form-data with the correct boundary.
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to extract CV.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Error - extractCV:", error);
+    throw error;
+  }
+}
+
+/**
+ * Discuss specific details with the AI using memory context.
+ */
+export async function postChatMessage(message: string, sessionId: string): Promise<{ response: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        session_id: sessionId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send message.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Error - chat:", error);
+    throw error;
+  }
+}
+
 export function apiUrl(path: string): string {
   return `${API_BASE_URL.replace('/api', '')}${path}`;
 }
+

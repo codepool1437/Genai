@@ -9,6 +9,7 @@ import {
     ChevronUp,
     Loader2,
     Map,
+    MessageSquare,
     Sparkles,
     Target,
     Zap
@@ -282,7 +283,15 @@ const RoadmapPage = () => {
             </div>
 
             {/* CTA */}
-            <div className="flex gap-3 pt-6">
+            <div className="flex gap-3 pt-6 flex-col sm:flex-row">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate("/chat")}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Discuss with AI Advisor
+              </Button>
               <Button
                 className="flex-1 bg-teal text-teal-foreground hover:bg-teal/90"
                 onClick={generate}
